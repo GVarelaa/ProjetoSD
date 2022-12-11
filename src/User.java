@@ -1,3 +1,5 @@
+import java.io.*;
+
 public class User {
     private String username;
     private String password;
@@ -33,7 +35,24 @@ public class User {
         this.password = password;
     }
 
-    public static User deserialize(byte[] data){
-        //TODO
+    public static User deserialize(byte[] data) throws IOException {
+        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+
+        String username = is.readUTF();
+        String password = is.readUTF();
+
+        return new User(username, password);
+    }
+
+    public byte[] serialize() throws IOException{
+        int size = 8 + this.username.length() + this.password.length();
+
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+        DataOutputStream os = new DataOutputStream(byteArray);
+
+        os.writeUTF(this.username);
+        os.writeUTF(this.password);
+
+        return byteArray.toByteArray();
     }
 }

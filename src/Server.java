@@ -19,10 +19,10 @@ class ServerWorker implements Runnable{
             TaggedConnection.Frame frame = this.c.receive();
 
             if(frame.tag == 1){   // é um pedido de registo
-
+                User user = User.deserialize(frame.data);
             }
             else if(frame.tag == 2){   // é um pedido de autenticação
-
+                User user = User.deserialize(frame.data);
             }
         }
         catch (Exception ignored){
