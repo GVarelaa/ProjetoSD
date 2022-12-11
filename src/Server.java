@@ -1,19 +1,33 @@
+import javax.swing.text.html.HTML;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
 class ServerWorker implements Runnable{
-    private Socket socket;
+    private TaggedConnection c;
     private UserManager userManager;
 
-    public ServerWorker(Socket socket, UserManager userManager){
-        this.socket = socket;
+    public ServerWorker(TaggedConnection c, UserManager userManager){
+        this.c = c;
         this.userManager = userManager;
     }
 
     @Override
     public void run(){
+        try{
+            TaggedConnection.Frame frame = this.c.receive();
+
+            if(frame.tag == 1){   // é um pedido de registo
+
+            }
+            else if(frame.tag == 2){   // é um pedido de autenticação
+
+            }
+        }
+        catch (Exception ignored){
+            //mudar
+        }
 
     }
 }
@@ -25,8 +39,9 @@ public class Server {
 
         while(true){
             Socket socket = serverSocket.accept();
+            TaggedConnection c = new TaggedConnection(socket);
 
-            Thread worker = new Thread(new ServerWorker(socket, userManager));
+            Thread worker = new Thread(new ServerWorker(c, userManager));
             worker.start();
         }
     }
