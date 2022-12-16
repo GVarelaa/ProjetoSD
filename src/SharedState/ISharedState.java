@@ -41,10 +41,11 @@ public interface ISharedState {
     /**
      * Tries to activate a scooter the closest to a given position, limited by a radius D (pre-configured)
      * @param p center of radius where free scooters will be checked
+     * @param username username of the client who activates the scooter
      * @return a reservation containing a reservation code and the position of the scooter found
      * @throws NoScootersAvailableException error if there are no available scooters
      */
-    Reservation activateScooter(Position p) throws NoScootersAvailableException;
+    Reservation activateScooter(Position p, String username) throws NoScootersAvailableException;
 
     /**
      * Parks a scooter given the reservation code and the final position of the ride

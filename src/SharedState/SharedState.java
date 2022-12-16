@@ -61,12 +61,13 @@ public class SharedState implements ISharedState {
     /**
      * Tries to activate a scooter the closest to a given position, limited by a radius D (pre-configured)
      * @param p center of radius where free scooters will be checked
+     * @param username username of the client who activates the scooter
      * @return a reservation containing a reservation code and the position of the scooter found
      * @throws NoScootersAvailableException error if there are no available scooters
      */
     @Override
-    public Reservation activateScooter(Position p) throws NoScootersAvailableException {
-        return null;
+    public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
+        return sm.activateScooter(p, username);
     }
 
     /**

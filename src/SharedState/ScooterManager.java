@@ -1,5 +1,8 @@
 package SharedState;
 
+import Exceptions.NoScootersAvailableException;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,5 +47,22 @@ public class ScooterManager {
         }
 
         return freeScooters;
+    }
+
+    /**
+     * Tries to activate a scooter the closest to a given position, limited by a radius D (pre-configured)
+     * @param p center of radius where free scooters will be checked
+     * @param username username of the client who activates the scooter
+     * @return a reservation containing a reservation code and the position of the scooter found
+     * @throws NoScootersAvailableException error if there are no available scooters
+     */
+    public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
+        List<Position> freeScooters = listFreeScooters(p);
+
+        if(freeScooters.size() > 0){
+            Reservation r = new Reservation(freeScooters.get(0), LocalDateTime.now(), username);
+            return r;
+        }
+        else throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
     }
 }
