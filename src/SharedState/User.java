@@ -1,3 +1,5 @@
+package SharedState;
+
 import java.io.*;
 
 public class User {

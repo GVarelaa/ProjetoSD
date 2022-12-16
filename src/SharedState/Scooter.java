@@ -1,3 +1,5 @@
+package SharedState;
+
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Scooter {

@@ -1,3 +1,5 @@
+package Client;
+
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.HashMap;

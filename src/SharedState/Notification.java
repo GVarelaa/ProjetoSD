@@ -1,3 +1,5 @@
+package SharedState;
+
 public class Notification {
     private boolean notificationsOn;
     private Position position;

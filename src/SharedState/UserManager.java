@@ -1,3 +1,5 @@
+package SharedState;
+
 import Exceptions.NonExistantUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 

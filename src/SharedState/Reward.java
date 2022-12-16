@@ -1,3 +1,5 @@
+package SharedState;
+
 public class Reward {
     private Position initialPosition;
     private Position finalPosition;

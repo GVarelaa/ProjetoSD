@@ -1,3 +1,5 @@
+package Server;
+
 import Connections.TaggedConnection;
 import java.io.IOException;
 import java.net.ServerSocket;
