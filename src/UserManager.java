@@ -1,3 +1,6 @@
+import Exceptions.NonExistantUsernameException;
+import Exceptions.UsernameAlreadyExistsException;
+
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,12 +13,12 @@ public class UserManager {
         this.lock = new ReentrantLock();
     }
 
-    public void register(String username, String password){
+    public void register(String username, String password) throws UsernameAlreadyExistsException {
         try{
             this.lock.lock();
 
             if(this.users.containsKey(username)){
-                throw new UsernameAlreadyExistsException();
+                throw new UsernameAlreadyExistsException("Username " + username + " already exists!");
             }
 
             User newUser = new User(username, password);
@@ -26,12 +29,12 @@ public class UserManager {
         }
     }
     
-    public boolean login(String username, String password){
+    public boolean login(String username, String password) throws NonExistantUsernameException {
         try{
             this.lock.lock();
 
             if(!this.users.containsKey(username)){
-                throw new NonExistantUsernameException();
+                throw new NonExistantUsernameException("Username " + username + " doesn't exist!");
             }
 
             User user = this.users.get(username);
