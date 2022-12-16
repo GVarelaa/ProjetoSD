@@ -35,6 +35,24 @@ public class Position {
         this.y = y;
     }
 
+    /**
+     * Checks if the current position is in a given radius of a center position
+     * @param center center of the radius
+     * @param radius radius of circumference
+     */
+    public boolean inRadius(Position center, int radius){
+        return this.distanceTo(center) <= (double)radius;
+    }
+
+    /**
+     * Calculates the distance between two points (the current one and other)
+     * @param other the other point
+     * @return the distance (float) between these two points
+     */
+    private double distanceTo(Position other){
+        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("");

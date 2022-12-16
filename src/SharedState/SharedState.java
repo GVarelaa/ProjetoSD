@@ -5,6 +5,7 @@ import Exceptions.NonExistantUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Shared state of the application
@@ -12,6 +13,7 @@ import java.util.List;
  */
 public class SharedState implements ISharedState {
     private UserManager um;
+    private ScooterManager sm;
 
     /**
      * Register a user in the server
@@ -43,7 +45,7 @@ public class SharedState implements ISharedState {
      */
     @Override
     public List<Position> listFreeScooters(Position p){
-
+        return sm.listFreeScooters(p);
     }
 
     /**

@@ -1,6 +1,9 @@
 package Server;
 
 import Connections.TaggedConnection;
+import SharedState.User;
+import SharedState.UserManager;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
