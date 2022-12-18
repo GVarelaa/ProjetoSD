@@ -39,7 +39,6 @@ public class User {
 
     public static User deserialize(byte[] data) throws IOException {
         DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-
         String username = is.readUTF();
         String password = is.readUTF();
 

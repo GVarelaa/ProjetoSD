@@ -1,4 +1,4 @@
-package Client;
+package Connections;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
