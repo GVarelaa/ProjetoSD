@@ -7,14 +7,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManager {
     private final static int D = 2;
     private final static int N = 20; // dimensão do mapa
     private Set<Scooter> scooters;
-    private ReentrantReadWriteLock lockScooters;
-
+    //private ReentrantReadWriteLock lockScooters;
+    private ReentrantLock lockScooters; // Simplificar pra já
     private List<Reward> rewards;
 
     /**
@@ -22,7 +23,8 @@ public class ScooterManager {
      */
     public ScooterManager(){
         this.scooters = new HashSet<>();
-        this.lockScooters = new ReentrantReadWriteLock();
+        this.lockScooters = new ReentrantLock();
+        //this.lockScooters = new ReentrantReadWriteLock();
     }
 
     /**
@@ -42,14 +44,23 @@ public class ScooterManager {
         List<Position> freeScooters = new ArrayList<>();
         // TODO: Acquire lock when other operations can cause inconsistency
 
-        for(Scooter scooter: scooters){ // Iterate over scooters set
-            Position scooterPosition = scooter.getPosition();
-            if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
-                freeScooters.add(scooterPosition.clone());
-            }
-        }
+        try{
+            this.lockScooters.lock();
 
-        return freeScooters;
+            for(Scooter scooter: scooters){ // Iterate over scooters set
+                if(scooter.getIsFree()){
+                    Position scooterPosition = scooter.getPosition();
+                    if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
+                        freeScooters.add(scooterPosition.clone());
+                    }
+                }
+            }
+
+            return freeScooters;
+        }
+        finally {
+            this.lockScooters.unlock();
+        }
     }
 
     /**

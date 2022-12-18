@@ -4,12 +4,14 @@ import Exceptions.UsernameAlreadyExistsException;
 import SharedState.SharedState;
 import SharedState.User;
 import SharedState.UserManager;
+import SharedState.Position;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 
 class ServerWorker implements Runnable{
@@ -64,6 +66,20 @@ class ServerWorker implements Runnable{
 
                     this.connection.send(2, byteArray.toByteArray());
                 }
+            }
+            else if(frame.tag == 3){
+                Position p = Position.deserialize(frame.data);
+                List<Position> positions = this.sharedState.listFreeScooters(p);
+
+                ByteArrayOutputStream byteArray = new ByteArrayOutputStream(4 + positions.size()*8);
+                DataOutputStream os = new DataOutputStream(byteArray);
+
+                os.writeInt(positions.size()); // Comprimento da lista
+                for(Position pos : positions){
+                    os.write(pos.serialize());
+                }
+
+                this.connection.send(3, byteArray.toByteArray());
             }
         }
         catch (Exception ignored){

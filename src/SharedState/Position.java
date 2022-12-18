@@ -1,5 +1,7 @@
 package SharedState;
 
+import java.io.*;
+
 public class Position {
     private int x;
     private int y;
@@ -51,6 +53,24 @@ public class Position {
      */
     private double distanceTo(Position other){
         return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    public static Position deserialize(byte[] data) throws IOException {
+        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+        int x = is.readInt();
+        int y = is.readInt();
+
+        return new Position(x,y);
+    }
+
+    public byte[] serialize() throws IOException{
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(8);
+        DataOutputStream os = new DataOutputStream(byteArray);
+
+        os.writeInt(this.x);
+        os.writeInt(this.y);
+
+        return byteArray.toByteArray();
     }
 
     @Override

@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.Socket;
 
 public class Client {
-    private Demultiplexer multiplexer;
+    private final Demultiplexer multiplexer;
 
     public Client() throws IOException{
         Socket socket = new Socket("localhost", 12345);
