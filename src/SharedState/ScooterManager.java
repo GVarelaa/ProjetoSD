@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManager {
     private final static int D = 2;
+    private final static int N = 20; // dimensão do mapa
     private Set<Scooter> scooters;
     private ReentrantReadWriteLock lockScooters;
 
@@ -75,6 +76,86 @@ public class ScooterManager {
         while (true){ // TODO alterar para condition
             // await
 
+            char matrix[][] = new char [N][N]; // For testing currently, should be an instance variable
+            List<Position> overcrowdedPositions = new ArrayList<Position>();
+            List<Position> freePositions = new ArrayList<Position>();
+
+            for(int i=0; i<N; i++){ // Iterate the map looking for overcrowded positions and free positions
+                for(int j=0; j<N; j++){
+                    int positionState = this.evaluatePosition(i, j, matrix);
+                    if (positionState == 0){
+                        freePositions.add(new Position(j, i));
+                    }
+                    else if (positionState > 1){
+                        overcrowdedPositions.add(new Position(i, j));
+                    }
+                }
+            }
+
+            Reward newReward = null;
+            // Generate one reward, if possible
+            if (overcrowdedPositions.size() > 1 && freePositions.size() > 1){
+                newReward = new Reward(overcrowdedPositions.get(0), freePositions.get(0), 2); // 2 is hard-coded here
+            }
+
+            this.rewards.add(newReward); // Needs locking
         }
+    }
+
+    /**
+     * Calculate the right or bottom limit of square radius
+     * @param num number to evaluate
+     * @return the limit
+     */
+    public static int getBorderLeft(int num){
+        int before;
+
+        if (num > D-1){
+            before = num-D+1;
+        }
+        else before = 0;
+        return before;
+    }
+
+    /**
+     * Calculate the left or upper limit of square radius
+     * @param num number to evaluate
+     * @return the limit
+     */
+    public static int getBorderRight(int num){
+        int after;
+
+        if (num < N-D+1){
+            after = num+D-1;
+        }
+        else after = N-1;
+        return after;
+    }
+
+    /**
+     * Counts the number of scooters in a radius D of (columnNum, lineNum)
+     * @param lineNum number of line in matrix
+     * @param columnNum number of column in matrix
+     * @param matrix matrix with the state
+     * @return the number of scooters found
+     */
+    public int evaluatePosition(int lineNum, int columnNum, char [][] matrix){
+        int up, down, left, right;
+        up = getBorderLeft(lineNum);
+        down = getBorderRight(lineNum);
+        left = getBorderLeft(columnNum);
+        right = getBorderRight(columnNum);
+
+        int count = 0;
+
+        for(int i=up; i<=down; i++){
+            for(int j=left; j<=right; j++){
+                if (matrix[i][j] == 'X'){
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 }
