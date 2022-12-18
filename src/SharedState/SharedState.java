@@ -15,6 +15,11 @@ public class SharedState implements ISharedState {
     private UserManager um;
     private ScooterManager sm;
 
+    public SharedState(){
+        this.um = new UserManager();
+        this.sm = new ScooterManager();
+    }
+
     /**
      * Register a user in the server
      * @param username username of the user

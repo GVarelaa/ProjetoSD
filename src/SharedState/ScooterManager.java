@@ -14,6 +14,8 @@ public class ScooterManager {
     private Set<Scooter> scooters;
     private ReentrantReadWriteLock lockScooters;
 
+    private List<Reward> rewards;
+
     /**
      * Instantiates scooters map and collection lock
      */
@@ -64,5 +66,15 @@ public class ScooterManager {
             return r;
         }
         else throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
+    }
+
+    /**
+     * Daemon that evaluates current scooter distribution and tries to optimize it, generating rewards
+     */
+    public void generateRewards(){
+        while (true){ // TODO alterar para condition
+            // await
+
+        }
     }
 }
