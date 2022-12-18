@@ -6,48 +6,56 @@ import java.io.*;
 import java.net.Socket;
 
 public class Client {
-    public static void main(String[] args) throws IOException {
+    private Demultiplexer multiplexer;
+
+    public Client() throws IOException{
         Socket socket = new Socket("localhost", 12345);
         TaggedConnection connection = new TaggedConnection(socket);
-        Demultiplexer multiplexer = new Demultiplexer(connection);
-        multiplexer.start();
+        this.multiplexer = new Demultiplexer(connection);
+    }
 
-        Thread[] threads = {
+    public void start() throws IOException{
+        this.multiplexer.start();
+    }
 
-                new Thread(() -> {
-                    try  {
-                        // send request
-                        String username = "guilherme";
-                        String password = "lol";
+    public void close() throws IOException {
+        this.multiplexer.close();
+    }
 
-                        int size = 8 + username.length() + password.length();
-                        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-                        DataOutputStream os = new DataOutputStream(byteArray);
-                        os.writeUTF(username);
-                        os.writeUTF(password);
+    public int register(String username, String password) throws IOException, InterruptedException {
+        // send request
+        int size = 8 + username.length() + password.length();
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+        DataOutputStream os = new DataOutputStream(byteArray);
+        os.writeUTF(username);
+        os.writeUTF(password);
 
-                        multiplexer.send(1, byteArray.toByteArray());
-                        Thread.sleep(100);
-                        // get reply
-                        byte[] data = multiplexer.receive(1); // bloqueia enquanto nao existirem mensagens / erro
+        this.multiplexer.send(1, byteArray.toByteArray());
 
-                        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-                        int flag = is.readInt();
+        // get reply
+        byte[] data = this.multiplexer.receive(1); // bloqueia enquanto nao existirem mensagens / erro
 
-                        if(flag == 0){
-                            System.out.println("Registo com sucesso!");
-                        }
-                        else{
-                            System.out.println("Username existente!");
-                            multiplexer.close();
-                        }
+        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+        int flag = is.readInt();
 
-                    }  catch (Exception ignored) {}
-                }),
-        };
+        return flag;
+    }
 
-        for (Thread t: threads) t.start();
-        //for (Thread t: threads) t.join();
-        //multiplexer.close();
+    public int login(String username, String password) throws IOException, InterruptedException {
+        int size = 8 + username.length() + password.length();
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+        DataOutputStream os = new DataOutputStream(byteArray);
+        os.writeUTF(username);
+        os.writeUTF(password);
+
+        this.multiplexer.send(2, byteArray.toByteArray());
+
+        // get reply
+        byte[] data = this.multiplexer.receive(2); // bloqueia enquanto nao existirem mensagens / erro
+
+        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+        int flag = is.readInt();
+
+        return flag;
     }
 }
