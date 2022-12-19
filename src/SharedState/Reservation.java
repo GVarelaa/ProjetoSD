@@ -11,6 +11,11 @@ public class Reservation {
     private String username;
     private static int idCount = 0;
 
+    public Reservation(int reservationID, Position initialPosition){
+        this.reservationID = reservationID;
+        this.initialPosition = initialPosition;
+    }
+
     public Reservation(Position initialPosition, LocalDateTime timestamp, String username) {
         this.reservationID = idCount++;
         this.timestamp = timestamp;
