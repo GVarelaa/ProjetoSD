@@ -74,28 +74,35 @@ public class Client {
      * @throws InterruptedException
      */
     public List<Position> listFreeScooters(Position p) throws IOException, InterruptedException {
-        int size = 8; // (x)4 + (y)4 bytes
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-        DataOutputStream os = new DataOutputStream(byteArray);
-        os.writeInt(p.getX());
-        os.writeInt(p.getY());
+        Thread freeScooters = new Thread(() -> {
+            try{
+                int size = 8; // (x)4 + (y)4 bytes
+                ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+                DataOutputStream os = new DataOutputStream(byteArray);
+                os.writeInt(p.getX());
+                os.writeInt(p.getY());
 
-        this.multiplexer.send(3, byteArray.toByteArray());
+                this.multiplexer.send(3, byteArray.toByteArray());
 
-        // get reply
-        byte[] data = this.multiplexer.receive(3);
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+                // get reply
+                byte[] data = this.multiplexer.receive(3);
+                DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
-        List<Position> positions = new ArrayList<>();
-        int length = is.readInt();
+                List<Position> positions = new ArrayList<>();
+                int length = is.readInt();
 
-        for(int i=0; i<length; i++){
-            int x = is.readInt();
-            int y = is.readInt();
-            positions.add(0, new Position(x, y));
-        }
+                for(int i=0; i<length; i++){
+                    int x = is.readInt();
+                    int y = is.readInt();
+                    positions.add(new Position(x, y));
+                }
 
-        return positions;
+                return positions;
+            }
+            catch (Exception ignored){
+
+            }
+        }).start();
     }
 
     /**
@@ -108,35 +115,42 @@ public class Client {
      * @throws InterruptedException
      */
     public List<List<Position>> listRewards(Position p) throws IOException, InterruptedException {
-        int size = 8; // (x)4 + (y)4 bytes
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-        DataOutputStream os = new DataOutputStream(byteArray);
-        os.writeInt(p.getX());
-        os.writeInt(p.getY());
+        Thread listRewards = new Thread(() -> {
+            try{
+                int size = 8; // (x)4 + (y)4 bytes
+                ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+                DataOutputStream os = new DataOutputStream(byteArray);
+                os.writeInt(p.getX());
+                os.writeInt(p.getY());
 
-        this.multiplexer.send(4, byteArray.toByteArray());
+                this.multiplexer.send(4, byteArray.toByteArray());
 
-        // get reply
-        byte[] data = this.multiplexer.receive(4);
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+                // get reply
+                byte[] data = this.multiplexer.receive(4);
+                DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
-        List<List<Position>> rewards = new ArrayList<>();
-        int length = is.readInt();
+                List<List<Position>> rewards = new ArrayList<>();
+                int length = is.readInt();
 
-        for(int i=0; i<length; i++){
-            int xi = is.readInt();
-            int yi = is.readInt();
-            int xf = is.readInt();
-            int yf = is.readInt();
+                for(int i=0; i<length; i++){
+                    int xi = is.readInt();
+                    int yi = is.readInt();
+                    int xf = is.readInt();
+                    int yf = is.readInt();
 
-            List<Position> pair = new ArrayList<>();
-            pair.add(0, new Position(xi, yi)); // Posição inicial
-            pair.add(1, new Position(xf, yf)); // Posição final
+                    List<Position> pair = new ArrayList<>();
+                    pair.add(0, new Position(xi, yi)); // Posição inicial
+                    pair.add(1, new Position(xf, yf)); // Posição final
 
-            rewards.add(i, pair);
-        }
+                    rewards.add(i, pair);
+                }
 
-        return rewards;
+                return rewards;
+            }
+            catch(Exception ignored){
+
+            }
+        }).start();
     }
 
     /**
@@ -149,29 +163,36 @@ public class Client {
      * @throws InterruptedException
      */
     public Reservation activateScooter(Position p) throws IOException, InterruptedException {
-        int size = 8; // (x)4 + (y)4 bytes
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-        DataOutputStream os = new DataOutputStream(byteArray);
-        os.writeInt(p.getX());
-        os.writeInt(p.getY());
+        Thread activateScooter = new Thread(() -> {
+            try{
+                int size = 8; // (x)4 + (y)4 bytes
+                ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+                DataOutputStream os = new DataOutputStream(byteArray);
+                os.writeInt(p.getX());
+                os.writeInt(p.getY());
 
-        this.multiplexer.send(5, byteArray.toByteArray());
+                this.multiplexer.send(5, byteArray.toByteArray());
 
-        // get reply
-        byte[] data = this.multiplexer.receive(5);
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+                // get reply
+                byte[] data = this.multiplexer.receive(5);
+                DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
-        Reservation reservation = null;
-        int returnCode = is.readInt();
+                Reservation reservation = null;
+                int returnCode = is.readInt();
 
-        if (returnCode == 0){
-            int x = is.readInt();
-            int y = is.readInt();
-            int codReservation = is.readInt();
-            reservation = new Reservation(codReservation, new Position(x, y)) ;
-        }
+                if (returnCode == 0){
+                    int x = is.readInt();
+                    int y = is.readInt();
+                    int codReservation = is.readInt();
+                    reservation = new Reservation(codReservation, new Position(x, y)) ;
+                }
 
-        return reservation;
+                return reservation;
+            }
+            catch (Exception ignored){
+
+            }
+        }).start();
     }
 
     /**
@@ -185,19 +206,26 @@ public class Client {
      * @throws InterruptedException
      */
     public int parkScooter(Position p, int codReservation) throws IOException, InterruptedException {
-        int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-        DataOutputStream os = new DataOutputStream(byteArray);
-        os.writeInt(p.getX());
-        os.writeInt(p.getY());
-        os.writeInt(codReservation);
+        Thread parkScooter = new Thread(() -> {
+            try{
+                int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
+                ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+                DataOutputStream os = new DataOutputStream(byteArray);
+                os.writeInt(p.getX());
+                os.writeInt(p.getY());
+                os.writeInt(codReservation);
 
-        this.multiplexer.send(6, byteArray.toByteArray());
+                this.multiplexer.send(6, byteArray.toByteArray());
 
-        // get reply
-        byte[] data = this.multiplexer.receive(6);
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+                // get reply
+                byte[] data = this.multiplexer.receive(6);
+                DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
-        return is.readInt();
+                return is.readInt();
+            }
+            catch (Exception ignored){
+
+            }
+        }).start();
     }
 }
