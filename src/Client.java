@@ -185,7 +185,7 @@ public class Client {
      * @throws InterruptedException
      */
     public int parkScooter(Position p, int codReservation) throws IOException, InterruptedException {
-        int size = 8; // (x)4 + (y)4 bytes
+        int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
         DataOutputStream os = new DataOutputStream(byteArray);
         os.writeInt(p.getX());
