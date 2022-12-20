@@ -78,13 +78,13 @@ public class SharedState implements ISharedState {
     /**
      * Parks a scooter given the reservation code and the final position of the ride
      * (A ride can be a reward)
-     * @param reservationId reservation code
+     * @param reservationID reservation code
      * @param parkingPosition final position of the scooter
      * @return the cost of the ride or the reward (if applicable)
      */
     @Override
-    public int parkScooter(int reservationId, Position parkingPosition) {
-        return 0;
+    public double parkScooter(int reservationID, Position parkingPosition) {
+        return sm.parkScooter(reservationID, parkingPosition);
     }
 
 

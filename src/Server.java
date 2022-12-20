@@ -128,14 +128,11 @@ class ServerWorker implements Runnable{
                 DataInputStream is = new DataInputStream(byteInputStream);
                 int reservationID = is.readInt();
 
-                // = parkScooter
-                int cost = 0;
-                float distance = 0;
+                double cost = this.sharedState.parkScooter(reservationID, p);
 
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 4 + 4
+                ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 8 - double
                 DataOutputStream os = new DataOutputStream(byteStream);
-                os.writeInt(cost);
-                os.writeFloat(distance);
+                os.writeDouble(cost);
 
                 this.connection.send(6, byteStream.toByteArray());
             }

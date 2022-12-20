@@ -54,7 +54,7 @@ public interface ISharedState {
      * @param parkingPosition final position of the scooter
      * @return the cost of the ride or the reward (if applicable)
      */
-    int parkScooter(int reservationId, Position parkingPosition);
+    double parkScooter(int reservationId, Position parkingPosition);
 
     /**
      * Sets a client (identified by username) available to receive notifications for when rewards appear in a radius D (pre-configured) of a given position

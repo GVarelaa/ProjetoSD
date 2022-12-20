@@ -3,10 +3,8 @@ package SharedState;
 import Exceptions.NoScootersAvailableException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -16,8 +14,7 @@ public class ScooterManager {
     private final static int S = 10; // número de scooters fixo, distribuição aleatória mais à frente
     private Scooter[] scooters;
     private List<Reward> rewards;
-    private Set<Reservation> reservations;
-    //private ReentrantReadWriteLock lockScooters;
+    private Map<Integer, Reservation> reservations;
     private ReentrantLock lockRewards;
     private ReentrantLock lockReservations;
 
@@ -28,8 +25,7 @@ public class ScooterManager {
     public ScooterManager(){
         this.scooters = new Scooter[S];
         this.rewards = new ArrayList<>();
-        this.reservations = new HashSet<>();
-        //this.lockScooters = new ReentrantReadWriteLock();
+        this.reservations = new HashMap<>();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
     }
@@ -93,11 +89,11 @@ public class ScooterManager {
      * @throws NoScootersAvailableException error if there are no available scooters
      */
     public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
-        List<Position> freeScooters = new ArrayList<>();
         Scooter nearScooter = null;
 
+        for (Scooter scooter: this.scooters) { // Iterate over scooters set
+            scooter.lockScooter.lock();
 
-        for (Scooter scooter: scooters) { // Iterate over scooters set
             if (scooter.getIsFree()) {
                 Position scooterPosition = scooter.getPosition();
 
@@ -111,6 +107,11 @@ public class ScooterManager {
             }
         }
 
+        for (Scooter scooter : this.scooters){
+            if(scooter != nearScooter){ // Mudar para equals
+                scooter.lockScooter.unlock();
+            }
+        }
 
         try {
             this.lockReservations.lock();
@@ -118,14 +119,74 @@ public class ScooterManager {
                 throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
             }
 
-            Reservation r = new Reservation(nearScooter.getPosition(), LocalDateTime.now(), username);
-            this.reservations.add(r);
+            nearScooter.setIsFree(false);
+            Reservation r = new Reservation(nearScooter, username);
+            this.reservations.put(r.getReservationID(), r);
             return r; // clone???
         }
         finally {
+            nearScooter.lockScooter.unlock();
             this.lockReservations.unlock();
         }
     }
+
+
+    /**
+     * Calculates the cost of a reservation given the distance and duration
+     * @param distance covered distance
+     * @param duration duration of the reservation
+     * @return the cost of the reservation
+     */
+    public static double calculateCost(double distance, double duration){
+        double cost = 0;
+
+        cost = 0.15 * duration;// 15 centimos por minuto
+
+        return Math.round(cost * 100) / 100.0;  // Arredondar a 2 casas decimais
+    }
+
+    /**
+     * Parks a scooter given the reservation code and the final position of the ride
+     * (A ride can be a reward)
+     * @param reservationID reservation code
+     * @param parkingPosition final position of the scooter
+     * @return the cost of the ride or the reward (if applicable)
+     */
+    public double parkScooter(int reservationID, Position parkingPosition){
+        Scooter scooter = null;
+        Reservation reservation = null;
+        LocalDateTime parkTimestamp = LocalDateTime.now();
+        try{
+            this.lockReservations.lock();
+
+            reservation = this.reservations.get(reservationID);
+            scooter = reservation.getScooter();
+            scooter.lockScooter.lock();
+
+            this.reservations.remove(reservationID); // removemos do mapa?
+        }
+        finally {
+            this.lockReservations.unlock();;
+        }
+
+        try{
+            Position initialPosition = reservation.getInitialPosition();
+            double distance = initialPosition.distanceTo(parkingPosition);
+            double duration = ChronoUnit.MINUTES.between(parkTimestamp, reservation.getTimestamp()); // Segundos
+
+            double cost = ScooterManager.calculateCost(distance, duration);
+
+            scooter.setPosition(parkingPosition);
+            scooter.setIsFree(true);
+
+            return cost;
+        }
+        finally {
+            scooter.lockScooter.unlock();
+        }
+    }
+
+
 
     /**
      * Daemon that evaluates current scooter distribution and tries to optimize it, generating rewards

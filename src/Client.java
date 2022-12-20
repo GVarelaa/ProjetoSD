@@ -217,10 +217,9 @@ public class Client {
                 byte[] data = this.multiplexer.receive(6);
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
-                int cost = is.readInt();
-                float distance = is.readFloat();
+                double cost = is.readDouble();
 
-                return null; // mudar
+                return cost;
             }
             catch (Exception ignored){
 
