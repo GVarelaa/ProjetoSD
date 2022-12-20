@@ -20,6 +20,11 @@ public class Reservation {
         this.username = username;
     }
 
+    public Reservation(int codReservation, Position p) { // Para o cliente poder receber reservas (talvez mude depois)
+        this.reservationID = codReservation;
+        this.initialPosition = p;
+    }
+
     public int getReservationID() {
         return this.reservationID;
     }

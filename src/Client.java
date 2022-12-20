@@ -75,7 +75,7 @@ public class Client {
      * @throws InterruptedException
      */
     public List<Position> listFreeScooters(Position p) throws IOException, InterruptedException {
-        Thread freeScooters = new Thread(() -> {
+        //Thread freeScooters = new Thread(() -> {
             try{
                 int size = 8; // (x)4 + (y)4 bytes
                 ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -101,7 +101,8 @@ public class Client {
                 return positions;
             }
             catch (Exception ignored){}
-        }).start();
+            return null;
+        //}).start();
     }
 
     /**
@@ -114,7 +115,7 @@ public class Client {
      * @throws InterruptedException
      */
     public List<List<Position>> listRewards(Position p) throws IOException, InterruptedException {
-        Thread listRewards = new Thread(() -> {
+        //Thread listRewards = new Thread(() -> {
             try{
                 int size = 8; // (x)4 + (y)4 bytes
                 ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -147,7 +148,8 @@ public class Client {
                 return rewards;
             }
             catch(Exception ignored){}
-        }).start();
+            return null;
+        //}).start();
     }
 
     /**
@@ -161,7 +163,7 @@ public class Client {
      * @throws InterruptedException
      */
     public Reservation activateScooter(Position p, String username) throws IOException, InterruptedException {
-        Thread activateScooter = new Thread(() -> {
+        //Thread activateScooter = new Thread(() -> {
             try{
                 int size = 8 + 2 + username.length(); // (x)4 + (y)4 bytes + (username_size)2 bytes + username
                 ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -189,7 +191,8 @@ public class Client {
                 return reservation;
             }
             catch (Exception ignored){}
-        }).start();
+            return null;
+        //}).start();
     }
 
     /**
@@ -203,7 +206,7 @@ public class Client {
      * @throws InterruptedException
      */
     public double parkScooter(Position p, int codReservation) throws IOException, InterruptedException {
-        Thread parkScooter = new Thread(() -> {
+        //Thread parkScooter = new Thread(() -> {
             try{
                 int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
                 ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);
@@ -225,6 +228,8 @@ public class Client {
             catch (Exception ignored){
 
             }
-        }).start();
+        //}).start();
+            return 0;
     }
+
 }
