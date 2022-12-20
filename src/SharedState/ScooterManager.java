@@ -13,11 +13,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ScooterManager {
     private final static int D = 2;
     private final static int N = 20; // dimensão do mapa
-    private Set<Scooter> scooters;
+    private final static int S = 10; // número de scooters fixo, distribuição aleatória mais à frente
+    private Scooter[] scooters;
     private List<Reward> rewards;
     private Set<Reservation> reservations;
     //private ReentrantReadWriteLock lockScooters;
-    private ReentrantLock lockScooters; // Simplificar pra já
     private ReentrantLock lockRewards;
     private ReentrantLock lockReservations;
 
@@ -26,10 +26,9 @@ public class ScooterManager {
      * Instantiates scooters map and collection lock
      */
     public ScooterManager(){
-        this.scooters = new HashSet<>();
+        this.scooters = new Scooter[this.S];
         this.rewards = new ArrayList<>();
         this.reservations = new HashSet<>();
-        this.lockScooters = new ReentrantLock();
         //this.lockScooters = new ReentrantReadWriteLock();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
@@ -50,25 +49,17 @@ public class ScooterManager {
      */
     public List<Position> listFreeScooters(Position p){
         List<Position> freeScooters = new ArrayList<>();
-        // TODO: Acquire lock when other operations can cause inconsistency
 
-        try{
-            this.lockScooters.lock();
-
-            for(Scooter scooter: scooters){ // Iterate over scooters set
-                if(scooter.getIsFree()){
-                    Position scooterPosition = scooter.getPosition();
-                    if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
-                        freeScooters.add(scooterPosition.clone());
-                    }
+        for(Scooter scooter: scooters){ // Iterate over scooters set
+            if(scooter.getIsFree()){
+                Position scooterPosition = scooter.getPosition();
+                if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
+                    freeScooters.add(scooterPosition.clone());
                 }
             }
+        }
 
-            return freeScooters;
-        }
-        finally {
-            this.lockScooters.unlock();
-        }
+        return freeScooters;
     }
 
     /**
@@ -107,29 +98,24 @@ public class ScooterManager {
         List<Position> freeScooters = new ArrayList<>();
         Scooter nearScooter = null;
 
-        try{
-            this.lockScooters.lock();
 
-            for (Scooter scooter: scooters) { // Iterate over scooters set
-                if (scooter.getIsFree()) {
-                    Position scooterPosition = scooter.getPosition();
+        for (Scooter scooter: scooters) { // Iterate over scooters set
+            if (scooter.getIsFree()) {
+                Position scooterPosition = scooter.getPosition();
 
-                    if (scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
-                        if (nearScooter == null) nearScooter = scooter;
+                if (scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
+                    if (nearScooter == null) nearScooter = scooter;
 
-                        if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
-                            nearScooter = scooter;
-                        }
+                    if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
+                        nearScooter = scooter;
                     }
                 }
             }
-            this.lockReservations.lock();
-        }
-        finally {
-            this.lockScooters.unlock();
         }
 
+
         try {
+            this.lockReservations.lock();
             if (nearScooter == null) {
                 throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
             }
