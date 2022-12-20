@@ -26,20 +26,12 @@ public class ScooterManager {
      * Instantiates scooters map and collection lock
      */
     public ScooterManager(){
-        this.scooters = new Scooter[this.S];
+        this.scooters = new Scooter[S];
         this.rewards = new ArrayList<>();
         this.reservations = new HashSet<>();
         //this.lockScooters = new ReentrantReadWriteLock();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
-    }
-
-    /**
-     * Adds a scooter to the set of scooters
-     * @param s reference to the scooter to be added
-     */
-    public void addScooter(Scooter s){
-        this.scooters.add(s.clone());
     }
 
     /**
@@ -51,12 +43,18 @@ public class ScooterManager {
         List<Position> freeScooters = new ArrayList<>();
 
         for(Scooter scooter: scooters){ // Iterate over scooters set
+            scooter.lockScooter.lock();
+
             if(scooter.getIsFree()){
                 Position scooterPosition = scooter.getPosition();
                 if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
                     freeScooters.add(scooterPosition.clone());
                 }
             }
+        }
+
+        for(Scooter scooter : scooters){
+            scooter.lockScooter.unlock();
         }
 
         return freeScooters;

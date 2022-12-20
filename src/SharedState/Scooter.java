@@ -4,7 +4,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Scooter {
     private Position position;
-    private ReentrantLock lockScooter;
+    public ReentrantLock lockScooter;
     private boolean isFree;
 
     public Scooter() {
