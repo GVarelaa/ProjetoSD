@@ -14,9 +14,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManager {
-    private final static int D = 3;
-    private final static int N = 5; // dimensão do mapa
-    private final static int S = 4; // número de scooters fixo,
+    private final static int D = 2;
+    private final static int N = 10; // dimensão do mapa
+    private final static int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
     private List<Reward> rewards;
     private Map<Integer, Reservation> reservations;
@@ -72,6 +72,19 @@ public class ScooterManager {
         }
 
         System.out.println(rep);
+    }
+
+    public void printMatrix(int [][] matrix){
+        String rep = "";
+        for(int i=0; i<N; i++){
+            for(int j=0; j<N; j++){
+                rep += matrix[i][j] + " ";
+            }
+            rep += "\n";
+        }
+
+        System.out.println(rep);
+
     }
 
     private int [][] convertToMatrix(){
@@ -258,17 +271,23 @@ public class ScooterManager {
      * Daemon that evaluates current scooter distribution and tries to optimize it, generating rewards
      */
     public void generateRewards(){
+        System.out.println("Matrix inicial");
         int[][] matrix = this.convertToMatrix(); // Será uma variável partilhada depois
+        this.printMatrix(matrix);
         List<Position> overcrowdedPositions = new ArrayList<Position>();
         List<Position> freePositions = new ArrayList<Position>();
+        int count = 0;
 
         while (true){
             lockScooters.lock();
             checkForRewards(overcrowdedPositions, freePositions, matrix);
-            while (overcrowdedPositions.size() == 0 || freePositions.size() == 0){
+            while (count == 30 || overcrowdedPositions.size() == 0 || freePositions.size() == 0){
                 try {
+                    System.out.println("Matrix final");
+                    this.printMatrix(matrix);
                     System.out.println("Olá");
                     cond.await();
+                    count = 0;
                     System.out.println("Olé");
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -277,13 +296,16 @@ public class ScooterManager {
 
             Reward newReward = null;
             // Generate one reward, if possible
-            if (overcrowdedPositions.size() > 1 && freePositions.size() > 1){
+            if (overcrowdedPositions.size() >= 1 && freePositions.size() >= 1){
                 newReward = new Reward(overcrowdedPositions.remove(0), freePositions.remove(0), 2); // 2 is hard-coded here
+                updateMatrix(newReward.getInitialPosition(), newReward.getFinalPosition(), matrix);
+                this.rewards.add(newReward); // Needs locking
             }
-            updateMatrix(newReward.getInitialPosition(), newReward.getFinalPosition(), matrix);
+
             overcrowdedPositions.clear();
             freePositions.clear();
-            this.rewards.add(newReward); // Needs locking
+            count++;
+
         }
     }
 
