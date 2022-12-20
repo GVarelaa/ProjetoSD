@@ -11,8 +11,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ScooterManager {
     private final static int D = 2;
     private final static int N = 20; // dimensão do mapa
-    private final static int S = 10; // número de scooters fixo, distribuição aleatória mais à frente
-    private Scooter[] scooters;
+    private final static int S = 10; // número de scooters fixo,
+    private Scooter[] scooters; // coleção estática
     private List<Reward> rewards;
     private Map<Integer, Reservation> reservations;
     private ReentrantLock lockRewards;
@@ -28,6 +28,18 @@ public class ScooterManager {
         this.reservations = new HashMap<>();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
+    }
+
+    /**
+     * Randomizes the scooters distribution in the map
+     */
+    private void randomizeScooterPositions(){
+        Random random = new Random();
+        for(int i=0; i<S; i++){
+            int x = random.nextInt(N);
+            int y = random.nextInt(N);
+            this.scooters[i] = new Scooter(new Position(x, y));
+        }
     }
 
     /**
