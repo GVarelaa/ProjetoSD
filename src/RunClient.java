@@ -2,16 +2,16 @@ import java.io.IOException;
 
 public class RunClient {
     public static void main(String[] args) throws IOException, InterruptedException {
-        //Client client = new Client();
-        //client.start();
+        Client client = new Client();
+        client.start();
 
         String username = "guilherme";
         String password = "lol";
 
-        //boolean flag = client.register(username, password);
+        boolean flag = client.register(username, password);
 
-        //System.out.println(flag);
+        System.out.println(flag);
 
-        //client.close();
+        client.close();
     }
 }

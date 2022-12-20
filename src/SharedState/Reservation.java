@@ -56,4 +56,12 @@ public class Reservation {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    /**
+     * Get the string representation of a reservation
+     * @return a reservation in the form of a string
+     */
+    public String toString(){
+        return this.reservationID + " , " + this.initialPosition + " , " + this.username + " , " + this.timestamp + "\n";
+    }
 }
