@@ -2,9 +2,14 @@ package SharedState;
 
 import Exceptions.NoScootersAvailableException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -15,6 +20,10 @@ public class ScooterManager {
     private Scooter[] scooters; // coleção estática
     private List<Reward> rewards;
     private Map<Integer, Reservation> reservations;
+
+    private ReentrantLock lockScooters;
+
+    private Condition cond;
     private ReentrantLock lockRewards;
     private ReentrantLock lockReservations;
 
@@ -28,6 +37,15 @@ public class ScooterManager {
         this.reservations = new HashMap<>();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
+
+        this.lockScooters = new ReentrantLock();
+        this.cond = lockScooters.newCondition();
+
+        this.randomizeScooterPositions();
+
+        new Thread(() -> {
+            this.generateRewards();
+        }).start();
     }
 
     /**
@@ -40,6 +58,37 @@ public class ScooterManager {
             int y = random.nextInt(N);
             this.scooters[i] = new Scooter(new Position(x, y));
         }
+    }
+
+    public void printScooters(){
+        String rep = "";
+        int matrix [][] = this.convertToMatrix();
+
+        for(int i=0; i<N; i++){
+            for(int j=0; j<N; j++){
+                rep += matrix[i][j] + " ";
+            }
+            rep += "\n";
+        }
+
+        System.out.println(rep);
+    }
+
+    private int [][] convertToMatrix(){
+        int [][] mat = new int[N][N];
+
+        for(int i=0; i<N; i++){
+            for(int j=0; j<N; j++){
+                mat[i][j] = 0;
+            }
+        }
+
+        for (Scooter s: this.scooters){
+            Position p = s.getPosition();
+            mat[p.getY()][p.getX()]++;
+        }
+
+        return mat;
     }
 
     /**
@@ -130,7 +179,7 @@ public class ScooterManager {
             if (nearScooter == null) {
                 throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
             }
-
+            //this.cond.signal();
             nearScooter.setIsFree(false);
             Reservation r = new Reservation(nearScooter, username);
             this.reservations.put(r.getReservationID(), r);
@@ -204,23 +253,20 @@ public class ScooterManager {
      * Daemon that evaluates current scooter distribution and tries to optimize it, generating rewards
      */
     public void generateRewards(){
-        while (true){ // TODO alterar para condition
-            // await
+        List<Position> overcrowdedPositions = new ArrayList<Position>();
+        List<Position> freePositions = new ArrayList<Position>();
 
-            char matrix[][] = new char [N][N]; // For testing currently, should be an instance variable
-            List<Position> overcrowdedPositions = new ArrayList<Position>();
-            List<Position> freePositions = new ArrayList<Position>();
+        while (true){
+            System.out.println("Olá");
+            lockScooters.lock();
 
-            for(int i=0; i<N; i++){ // Iterate the map looking for overcrowded positions and free positions
-                for(int j=0; j<N; j++){
-                    int positionState = this.evaluatePosition(i, j, matrix);
-                    if (positionState == 0){
-                        freePositions.add(new Position(j, i));
-                    }
-                    else if (positionState > 1){
-                        overcrowdedPositions.add(new Position(i, j));
-                    }
+            while (overcrowdedPositions.size() == 0 || freePositions.size() == 0){
+                try {
+                    cond.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
+                checkForRewards(overcrowdedPositions, freePositions);
             }
 
             Reward newReward = null;
@@ -233,12 +279,29 @@ public class ScooterManager {
         }
     }
 
+    private void checkForRewards(List<Position> overcrowdedPositions, List<Position> freePositions){
+        char matrix[][] = new char [N][N]; // For testing currently, should be an instance variable
+
+
+        for(int i=0; i<N; i++){ // Iterate the map looking for overcrowded positions and free positions
+            for(int j=0; j<N; j++){
+                int positionState = this.evaluatePosition(i, j, matrix);
+                if (positionState == 0){
+                    freePositions.add(new Position(j, i));
+                }
+                else if (positionState > 1){
+                    overcrowdedPositions.add(new Position(i, j));
+                }
+            }
+        }
+    }
+
     /**
      * Calculate the right or bottom limit of square radius
      * @param num number to evaluate
      * @return the limit
      */
-    public static int getBorderLeft(int num){
+    private static int getBorderLeft(int num){
         int before;
 
         if (num > D-1){

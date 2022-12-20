@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Client {
     private final Demultiplexer multiplexer;
 
@@ -201,7 +202,7 @@ public class Client {
      * @throws IOException
      * @throws InterruptedException
      */
-    public int parkScooter(Position p, int codReservation) throws IOException, InterruptedException {
+    public double parkScooter(Position p, int codReservation) throws IOException, InterruptedException {
         Thread parkScooter = new Thread(() -> {
             try{
                 int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
