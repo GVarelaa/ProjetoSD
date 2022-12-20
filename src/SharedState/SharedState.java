@@ -56,11 +56,11 @@ public class SharedState implements ISharedState {
     /**
      * List the available rewards in a radius D (pre-configured) of p
      * @param p center of radius where rewards will be checked
-     * @return a list of the rewards available
+     * @return a list of the positions of the rewards available
      */
     @Override
-    public List<Reward> listRewards(Position p){
-        return null;
+    public List<Position> listRewards(Position p){
+        return sm.listRewards(p);
     }
 
     /**

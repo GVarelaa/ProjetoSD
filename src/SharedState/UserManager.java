@@ -3,6 +3,7 @@ package SharedState;
 import Exceptions.NonExistantUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 

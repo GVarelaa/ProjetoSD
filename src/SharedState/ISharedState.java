@@ -34,9 +34,9 @@ public interface ISharedState {
     /**
      * List the available rewards in a radius D (pre-configured) of p
      * @param p center of radius where rewards will be checked
-     * @return a list of the rewards available
+     * @return a list of the positions of the rewards available
      */
-    List<Reward> listRewards(Position p);
+    List<Position> listRewards(Position p);
 
     /**
      * Tries to activate a scooter the closest to a given position, limited by a radius D (pre-configured)

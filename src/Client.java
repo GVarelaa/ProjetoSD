@@ -27,7 +27,7 @@ public class Client {
         this.multiplexer.close();
     }
 
-    public int register(String username, String password) throws IOException, InterruptedException {
+    public boolean register(String username, String password) throws IOException, InterruptedException {
         // send request
         int size = 4 + username.length() + password.length();
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -41,12 +41,12 @@ public class Client {
         byte[] data = this.multiplexer.receive(1); // bloqueia enquanto nao existirem mensagens / erro
 
         DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-        int flag = is.readInt();
+        boolean flag = is.readBoolean();
 
         return flag;
     }
 
-    public int login(String username, String password) throws IOException, InterruptedException {
+    public boolean login(String username, String password) throws IOException, InterruptedException {
         int size = 4 + username.length() + password.length();
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
         DataOutputStream os = new DataOutputStream(byteArray);
@@ -59,7 +59,7 @@ public class Client {
         byte[] data = this.multiplexer.receive(2); // bloqueia enquanto nao existirem mensagens / erro
 
         DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-        int flag = is.readInt();
+        boolean flag = is.readBoolean();
 
         return flag;
     }
@@ -99,9 +99,7 @@ public class Client {
 
                 return positions;
             }
-            catch (Exception ignored){
-
-            }
+            catch (Exception ignored){}
         }).start();
     }
 
@@ -147,9 +145,7 @@ public class Client {
 
                 return rewards;
             }
-            catch(Exception ignored){
-
-            }
+            catch(Exception ignored){}
         }).start();
     }
 
@@ -158,18 +154,20 @@ public class Client {
      * Waits for the response of the server
      * TODO test it!
      * @param p the position sent
+     * @param username Username
      * @return a reservation (id and initial position)
      * @throws IOException
      * @throws InterruptedException
      */
-    public Reservation activateScooter(Position p) throws IOException, InterruptedException {
+    public Reservation activateScooter(Position p, String username) throws IOException, InterruptedException {
         Thread activateScooter = new Thread(() -> {
             try{
-                int size = 8; // (x)4 + (y)4 bytes
+                int size = 8 + 2 + username.length(); // (x)4 + (y)4 bytes + (username_size)2 bytes + username
                 ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
                 DataOutputStream os = new DataOutputStream(byteArray);
                 os.writeInt(p.getX());
                 os.writeInt(p.getY());
+                os.writeUTF(username);
 
                 this.multiplexer.send(5, byteArray.toByteArray());
 
@@ -178,9 +176,9 @@ public class Client {
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
                 Reservation reservation = null;
-                int returnCode = is.readInt();
+                boolean returnCode = is.readBoolean();
 
-                if (returnCode == 0){
+                if (returnCode) {
                     int x = is.readInt();
                     int y = is.readInt();
                     int codReservation = is.readInt();
@@ -189,9 +187,7 @@ public class Client {
 
                 return reservation;
             }
-            catch (Exception ignored){
-
-            }
+            catch (Exception ignored){}
         }).start();
     }
 
@@ -209,19 +205,22 @@ public class Client {
         Thread parkScooter = new Thread(() -> {
             try{
                 int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
-                ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-                DataOutputStream os = new DataOutputStream(byteArray);
+                ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);
+                DataOutputStream os = new DataOutputStream(byteStream);
                 os.writeInt(p.getX());
                 os.writeInt(p.getY());
                 os.writeInt(codReservation);
 
-                this.multiplexer.send(6, byteArray.toByteArray());
+                this.multiplexer.send(6, byteStream.toByteArray());
 
                 // get reply
                 byte[] data = this.multiplexer.receive(6);
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
-                return is.readInt();
+                int cost = is.readInt();
+                float distance = is.readFloat();
+
+                return null; // mudar
             }
             catch (Exception ignored){
 

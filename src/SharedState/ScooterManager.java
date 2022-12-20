@@ -14,17 +14,25 @@ public class ScooterManager {
     private final static int D = 2;
     private final static int N = 20; // dimensão do mapa
     private Set<Scooter> scooters;
+    private List<Reward> rewards;
+    private Set<Reservation> reservations;
     //private ReentrantReadWriteLock lockScooters;
     private ReentrantLock lockScooters; // Simplificar pra já
-    private List<Reward> rewards;
+    private ReentrantLock lockRewards;
+    private ReentrantLock lockReservations;
+
 
     /**
      * Instantiates scooters map and collection lock
      */
     public ScooterManager(){
         this.scooters = new HashSet<>();
+        this.rewards = new ArrayList<>();
+        this.reservations = new HashSet<>();
         this.lockScooters = new ReentrantLock();
         //this.lockScooters = new ReentrantReadWriteLock();
+        this.lockRewards = new ReentrantLock();
+        this.lockReservations = new ReentrantLock();
     }
 
     /**
@@ -64,6 +72,31 @@ public class ScooterManager {
     }
 
     /**
+     * List the rewards in a radius D (pre-configured) of p
+     * @param p center of radius where rewards will be checked
+     * @return a list of the positions of the rewards
+     */
+    public List<Position> listRewards(Position p) {
+        List<Position> rewards = new ArrayList<>();
+
+        try {
+            this.lockRewards.lock();
+
+            for (Reward reward : this.rewards) {
+                Position rewardPosition = reward.getInitialPosition(); // inicial ou final ?
+                if (rewardPosition.inRadius(p, D)) {
+                    rewards.add(rewardPosition.clone());
+                }
+            }
+
+            return rewards;
+        }
+        finally {
+            this.lockRewards.unlock();
+        }
+    }
+
+    /**
      * Tries to activate a scooter the closest to a given position, limited by a radius D (pre-configured)
      * @param p center of radius where free scooters will be checked
      * @param username username of the client who activates the scooter
@@ -71,13 +104,43 @@ public class ScooterManager {
      * @throws NoScootersAvailableException error if there are no available scooters
      */
     public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
-        List<Position> freeScooters = listFreeScooters(p);
+        List<Position> freeScooters = new ArrayList<>();
+        Scooter nearScooter = null;
 
-        if(freeScooters.size() > 0){
-            Reservation r = new Reservation(freeScooters.get(0), LocalDateTime.now(), username);
-            return r;
+        try{
+            this.lockScooters.lock();
+
+            for (Scooter scooter: scooters) { // Iterate over scooters set
+                if (scooter.getIsFree()) {
+                    Position scooterPosition = scooter.getPosition();
+
+                    if (scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
+                        if (nearScooter == null) nearScooter = scooter;
+
+                        if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
+                            nearScooter = scooter;
+                        }
+                    }
+                }
+            }
+            this.lockReservations.lock();
         }
-        else throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
+        finally {
+            this.lockScooters.unlock();
+        }
+
+        try {
+            if (nearScooter == null) {
+                throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
+            }
+
+            Reservation r = new Reservation(nearScooter.getPosition(), LocalDateTime.now(), username);
+            this.reservations.add(r);
+            return r; // clone???
+        }
+        finally {
+            this.lockReservations.unlock();
+        }
     }
 
     /**

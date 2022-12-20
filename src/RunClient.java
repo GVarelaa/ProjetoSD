@@ -8,7 +8,7 @@ public class RunClient {
         String username = "guilherme";
         String password = "lol";
 
-        int flag = client.register(username, password);
+        boolean flag = client.register(username, password);
 
         System.out.println(flag);
 

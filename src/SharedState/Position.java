@@ -51,7 +51,7 @@ public class Position {
      * @param other the other point
      * @return the distance (float) between these two points
      */
-    private double distanceTo(Position other){
+    public double distanceTo(Position other){
         return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
     }
 
