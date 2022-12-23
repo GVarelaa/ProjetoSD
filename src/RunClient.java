@@ -1,3 +1,5 @@
+import SharedState.Position;
+
 import java.io.IOException;
 
 public class RunClient {
@@ -5,12 +7,12 @@ public class RunClient {
         Client client = new Client();
         client.start();
 
-        String username = "guilherme";
-        String password = "lol";
+        //String username = "guilherme";
+        //String password = "lol";
 
-        boolean flag = client.register(username, password);
-
-        System.out.println(flag);
+        //boolean flag = client.register(username, password);
+        client.turnOnNotifications(true, new Position(0,0));
+        //System.out.println(flag);
 
         client.close();
     }

@@ -27,6 +27,8 @@ public class ScooterManager {
     private ReentrantLock lockRewards;
     private ReentrantLock lockReservations;
 
+    private Map<String, Position> userNotifications; // Map<username, position>
+
 
     /**
      * Instantiates scooters map and collection lock
@@ -398,5 +400,29 @@ public class ScooterManager {
         }
 
         return count;
+    }
+
+    /**
+     * Sets a client (identified by username) available to receive notifications for when rewards appear in a radius D (pre-configured) of a given position
+     * Rewards will be sent later
+     * @param username username of the client
+     * @param p center of radius where notifications of rewards may be applicable
+     */
+    public void askForNotifications(String username, Position p) {
+        // Only does something if there isn't already a notification for that user
+        if (this.userNotifications.get(username) == null){
+
+        }
+    }
+
+    /**
+     * Cancel notifications for a given client
+     * @param username username of the client
+     */
+    public void cancelNotifications(String username) {
+        // Only does something if there is already a notification for that user
+        if (this.userNotifications.get(username) != null){
+
+        }
     }
 }

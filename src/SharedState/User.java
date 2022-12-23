@@ -5,15 +5,18 @@ import java.io.*;
 public class User {
     private String username;
     private String password;
+    private boolean notificationsState;
 
     public User() {
         this.username = "";
         this.password = "";
+        this.notificationsState = false;
     }
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.notificationsState = false;
     }
 
     public User(User c) {
@@ -29,6 +32,10 @@ public class User {
         return this.password;
     }
 
+    public Boolean getNotificationsState(){
+        return this.notificationsState;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -36,6 +43,12 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public void setNotificationsState(Boolean onOff){
+        this.notificationsState = onOff;
+    }
+
+
 
     public static User deserialize(byte[] data) throws IOException {
         DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));

@@ -96,7 +96,7 @@ public class SharedState implements ISharedState {
      */
     @Override
     public void askForNotifications(String username, Position p) {
-
+        this.sm.askForNotifications(username, p);
     }
 
     /**
@@ -105,7 +105,7 @@ public class SharedState implements ISharedState {
      */
     @Override
     public void cancelNotifications(String username) {
-
+        this.sm.cancelNotifications(username);
     }
 
 

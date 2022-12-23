@@ -232,4 +232,29 @@ public class Client {
             return 0;
     }
 
+    /**
+     * Turns on or off notifications for rewards near a given position
+     * @param onOff false - Off, true - On
+     * @param p given position or null if onOff == false
+     */
+    public void turnOnNotifications(boolean onOff, Position p){
+
+        try{
+            int size = 1 + (p != null ? 4 : 0); // (onOff)1 + (p)4 bytes
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);
+            DataOutputStream os = new DataOutputStream(byteStream);
+            os.writeBoolean(onOff);
+            if (p != null){
+                os.writeInt(p.getX());
+                os.writeInt(p.getY());
+            }
+
+            this.multiplexer.send(7, byteStream.toByteArray());
+        }
+        catch (Exception ignored){
+
+        }
+
+    }
+
 }

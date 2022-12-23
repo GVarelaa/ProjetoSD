@@ -26,115 +26,130 @@ class ServerWorker implements Runnable{
     @Override
     public void run(){
         try{
-            TaggedConnection.Frame frame = this.connection.receive();
+            // Session state
+            boolean notificationsOn = false;
+            while (true){
+                TaggedConnection.Frame frame = this.connection.receive();
 
-            if(frame.tag == 1){   // é um pedido de registo
-                User user = User.deserialize(frame.data);
-                try{
-                    this.sharedState.register(user.getUsername(), user.getPassword());
+                if(frame.tag == 1){   // é um pedido de registo
+                    User user = User.deserialize(frame.data);
+                    try{
+                        this.sharedState.register(user.getUsername(), user.getPassword());
 
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(true); // All good
+
+                        this.connection.send(1, byteStream.toByteArray());
+                    }
+                    catch(UsernameAlreadyExistsException e){
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(false); // Something went wrong
+
+                        this.connection.send(1, byteStream.toByteArray());
+                    }
+                }
+                else if(frame.tag == 2){   // é um pedido de autenticação
+                    User user = User.deserialize(frame.data);
+
+                    try{
+                        this.sharedState.login(user.getUsername(), user.getPassword());
+
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(true); // All good
+
+                        this.connection.send(2, byteStream.toByteArray());
+                    }
+                    catch(NonExistantUsernameException e){
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(false); // Something went wrong
+
+                        this.connection.send(2, byteStream.toByteArray());
+                    }
+                }
+                else if(frame.tag == 3){
+                    Position p = Position.deserialize(frame.data);
+                    List<Position> positions = this.sharedState.listFreeScooters(p);
+
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
                     DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeBoolean(true); // All good
 
-                    this.connection.send(1, byteStream.toByteArray());
+                    os.writeInt(positions.size()); // Comprimento da lista
+                    for(Position pos : positions){
+                        os.write(pos.serialize());
+                    }
+
+                    this.connection.send(3, byteStream.toByteArray());
                 }
-                catch(UsernameAlreadyExistsException e){
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                else if (frame.tag == 4) {
+                    Position p = Position.deserialize(frame.data);
+                    List<Position> positions = this.sharedState.listRewards(p);
+
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
                     DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeBoolean(false); // Something went wrong
 
-                    this.connection.send(1, byteStream.toByteArray());
+                    os.writeInt(positions.size());
+                    for (Position pos : positions) {
+                        os.write(pos.serialize());
+                    }
+
+                    this.connection.send(4, byteStream.toByteArray());
                 }
-            }
-            else if(frame.tag == 2){   // é um pedido de autenticação
-                User user = User.deserialize(frame.data);
+                else if (frame.tag == 5) {
+                    Position p = Position.deserialize(frame.data);
 
-                try{
-                    this.sharedState.login(user.getUsername(), user.getPassword());
+                    ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
+                    DataInputStream is = new DataInputStream(byteInputStream);
+                    String username = is.readUTF();
 
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                    try {
+                        Reservation reservation = this.sharedState.activateScooter(p, username);
+
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(13); // (x) 4 bytes + (y) 4 bytes + (reservation_id) 4 bytes + (bool) 1 byte
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(true);
+                        os.write(reservation.getInitialPosition().serialize());
+                        os.writeInt(reservation.getReservationID());
+
+                        this.connection.send(5, byteStream.toByteArray());
+                    }
+                    catch (NoScootersAvailableException e){
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(false); // Something went wrong
+
+                        this.connection.send(5, byteStream.toByteArray());
+                    }
+                }
+                else if (frame.tag == 6) {
+                    Position p = Position.deserialize(frame.data);
+
+                    ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
+                    DataInputStream is = new DataInputStream(byteInputStream);
+                    int reservationID = is.readInt();
+
+                    double cost = this.sharedState.parkScooter(reservationID, p);
+
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 8 - double
                     DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeBoolean(true); // All good
+                    os.writeDouble(cost);
 
-                    this.connection.send(2, byteStream.toByteArray());
+                    this.connection.send(6, byteStream.toByteArray());
                 }
-                catch(NonExistantUsernameException e){
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
-                    DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeBoolean(false); // Something went wrong
-
-                    this.connection.send(2, byteStream.toByteArray());
+                else if (frame.tag == 7){
+                    ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
+                    DataInputStream is = new DataInputStream(byteInputStream);
+                    boolean onOff = is.readBoolean();
+                    if (onOff == false){
+                        System.out.println("Notifications Off!");
+                    }
+                    else if (onOff == true){
+                        System.out.println("Notifications On!");
+                    }
                 }
-            }
-            else if(frame.tag == 3){
-                Position p = Position.deserialize(frame.data);
-                List<Position> positions = this.sharedState.listFreeScooters(p);
-
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
-                DataOutputStream os = new DataOutputStream(byteStream);
-
-                os.writeInt(positions.size()); // Comprimento da lista
-                for(Position pos : positions){
-                    os.write(pos.serialize());
-                }
-
-                this.connection.send(3, byteStream.toByteArray());
-            }
-            else if (frame.tag == 4) {
-                Position p = Position.deserialize(frame.data);
-                List<Position> positions = this.sharedState.listRewards(p);
-
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
-                DataOutputStream os = new DataOutputStream(byteStream);
-
-                os.writeInt(positions.size());
-                for (Position pos : positions) {
-                    os.write(pos.serialize());
-                }
-
-                this.connection.send(4, byteStream.toByteArray());
-            }
-            else if (frame.tag == 5) {
-                Position p = Position.deserialize(frame.data);
-
-                ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
-                DataInputStream is = new DataInputStream(byteInputStream);
-                String username = is.readUTF();
-
-                try {
-                    Reservation reservation = this.sharedState.activateScooter(p, username);
-
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(13); // (x) 4 bytes + (y) 4 bytes + (reservation_id) 4 bytes + (bool) 1 byte
-                    DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeBoolean(true);
-                    os.write(reservation.getInitialPosition().serialize());
-                    os.writeInt(reservation.getReservationID());
-
-                    this.connection.send(5, byteStream.toByteArray());
-                }
-                catch (NoScootersAvailableException e){
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
-                    DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeBoolean(false); // Something went wrong
-
-                    this.connection.send(5, byteStream.toByteArray());
-                }
-            }
-            else if (frame.tag == 6) {
-                Position p = Position.deserialize(frame.data);
-
-                ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
-                DataInputStream is = new DataInputStream(byteInputStream);
-                int reservationID = is.readInt();
-
-                double cost = this.sharedState.parkScooter(reservationID, p);
-
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 8 - double
-                DataOutputStream os = new DataOutputStream(byteStream);
-                os.writeDouble(cost);
-
-                this.connection.send(6, byteStream.toByteArray());
             }
         }
         catch (Exception ignored){
