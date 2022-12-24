@@ -3,12 +3,12 @@ package SharedState;
 public class Reward {
     private Position initialPosition;
     private Position finalPosition;
-    private int value;
+    private double value;
 
-    public Reward(Position initPos, Position finalPos, int value) {
+    public Reward(Position initPos, Position finalPos) {
         this.initialPosition = initPos;
         this.finalPosition = finalPos;
-        this.value = value;
+        this.value = this.calculateValue();
     }
 
     public Position getInitialPosition() {
@@ -19,7 +19,7 @@ public class Reward {
         return this.finalPosition.clone();
     }
 
-    public int getValue() {
+    public double getValue() {
         return this.value;
     }
 
@@ -31,7 +31,12 @@ public class Reward {
         this.finalPosition = pos;
     }
 
-    public void setValue(int value) {
+    public void setValue(double value) {
         this.value = value;
+    }
+
+    private double calculateValue(){
+        double distance = this.initialPosition.distanceTo(this.finalPosition);
+        return distance * 1; // 1 euro / km ??
     }
 }
