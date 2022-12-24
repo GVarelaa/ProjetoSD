@@ -28,6 +28,7 @@ public class ScooterManager {
     private ReentrantLock lockReservations;
 
     private Map<String, Position> userNotifications; // Map<username, position>
+    private int reservationID; // Para a condição da variável de condição
 
 
     /**
@@ -41,7 +42,8 @@ public class ScooterManager {
         this.lockReservations = new ReentrantLock();
 
         this.lockScooters = new ReentrantLock();
-        this.cond = lockScooters.newCondition();
+        this.cond = this.lockRewards.newCondition();
+        this.reservationID = -1;
 
         this.randomizeScooterPositions();
 
@@ -245,7 +247,7 @@ public class ScooterManager {
             this.reservations.remove(reservationID); // removemos do mapa?
         }
         finally {
-            this.lockReservations.unlock();;
+            this.lockReservations.unlock();
         }
 
         try{
@@ -257,6 +259,8 @@ public class ScooterManager {
 
             scooter.setPosition(parkingPosition);
             scooter.setIsFree(true);
+
+            this.reservationID = reservationID;
             this.cond.signal();
 
             return cost;
@@ -267,6 +271,61 @@ public class ScooterManager {
         }
     }
 
+    public void generateRewards(){
+        // Percorrer as trotis para tirar as posições das livres
+        // Para trotis em posições iguais, gerar recompensas
+        int lastReservationID = -1;
+        while(true){ // Quando for estacionada
+            while(this.reservationID == lastReservationID){
+                try{
+                    this.cond.await();
+                }
+                catch (Exception ignored){ // mudar
+
+                }
+            }
+
+            this.lockRewards.lock();
+
+            List<Position> positions = new ArrayList<Position>();
+            for(Scooter s : this.scooters){
+                s.lockScooter.lock();
+                if(s.getIsFree()){
+                    positions.add(s.getPosition());
+                }
+            }
+
+            this.rewards.clear(); // Apagar as rewards que lá estavam
+            for(Position p1 : positions){
+                if(positions.contains(p1)){ // Pelo menos 2 trotis no msm sítio
+                    for (int i = 0; i < N; i++){
+                        for (int j = 0; j < N; j++){
+                            boolean bool = true;
+
+                            for (Position p2 : positions){
+                                if(p2.inRadius(i, j, D)){
+                                    bool = false;
+                                    break;
+                                }
+                            }
+
+                            if(bool){
+                                this.rewards.add(new Reward(p1, new Position(i, j)));
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            for (Scooter s : this.scooters){
+                s.lockScooter.unlock();
+            }
+
+            this.lockRewards.unlock();
+            lastReservationID = this.reservationID;
+        }
+    }
 
 
     /**

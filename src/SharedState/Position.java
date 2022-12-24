@@ -45,6 +45,9 @@ public class Position {
     public boolean inRadius(Position center, int radius){
         return this.distanceTo(center) <= (double)radius;
     }
+    public boolean inRadius(int x, int y, int radius){
+        return this.distanceTo(x, y) <= (double)radius;
+    }
 
     /**
      * Calculates the distance between two points (the current one and other)
@@ -53,6 +56,10 @@ public class Position {
      */
     public double distanceTo(Position other){
         return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    public double distanceTo(int x, int y){
+        return Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2));
     }
 
     public static Position deserialize(byte[] data) throws IOException {
