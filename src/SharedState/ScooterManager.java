@@ -20,11 +20,9 @@ public class ScooterManager {
     private Scooter[] scooters; // coleção estática
     private List<Reward> rewards;
     private Map<Integer, Reservation> reservations;
-
-    private ReentrantLock lockScooters;
-
-    private Condition cond;
+    private ReentrantLock lock; // lock global
     private ReentrantLock lockRewards;
+    private Condition cond;
     private ReentrantLock lockReservations;
 
     private Map<String, Position> userNotifications; // Map<username, position>
@@ -40,8 +38,6 @@ public class ScooterManager {
         this.reservations = new HashMap<>();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
-
-        this.lockScooters = new ReentrantLock();
         this.cond = this.lockRewards.newCondition();
         this.reservationID = -1;
 
@@ -116,22 +112,25 @@ public class ScooterManager {
     public List<Position> listFreeScooters(Position p){
         List<Position> freeScooters = new ArrayList<>();
 
-        for(Scooter scooter: scooters){ // Iterate over scooters set
-            scooter.lockScooter.lock();
+        try{
+            for(Scooter scooter: this.scooters){ // Iterate over scooters set
+                scooter.lockScooter.lock();
 
-            if(scooter.getIsFree()){
-                Position scooterPosition = scooter.getPosition();
-                if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
-                    freeScooters.add(scooterPosition.clone());
+                if(scooter.getIsFree()){
+                    Position scooterPosition = scooter.getPosition();
+                    if(scooterPosition.inRadius(p, D)){ // If scooterPosition in radius D of p
+                        freeScooters.add(scooterPosition.clone());
+                    }
                 }
             }
-        }
 
-        for(Scooter scooter : scooters){
-            scooter.lockScooter.unlock();
+            return freeScooters;
         }
-
-        return freeScooters;
+        finally {
+            for(Scooter scooter : this.scooters){
+                scooter.lockScooter.unlock();
+            }
+        }
     }
 
     /**
@@ -154,7 +153,7 @@ public class ScooterManager {
 
             return rewards;
         }
-        finally {
+      finally {
             this.lockRewards.unlock();
         }
     }
@@ -168,45 +167,46 @@ public class ScooterManager {
      */
     public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
         Scooter nearScooter = null;
-        this.lockScooters.lock();
 
-        for (Scooter scooter: this.scooters) { // Iterate over scooters set
-            scooter.lockScooter.lock();
+        //this.lockScooters.lock();
 
-            if (scooter.getIsFree()) {
-                Position scooterPosition = scooter.getPosition();
+        try{
+            for (Scooter scooter: this.scooters) { // Iterate over scooters set
+                scooter.lockScooter.lock();
 
-                if (scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
-                    if (nearScooter == null) nearScooter = scooter;
+                if (scooter.getIsFree()) {
+                    Position scooterPosition = scooter.getPosition();
 
-                    if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
-                        nearScooter = scooter;
+                    if (scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
+                        if (nearScooter == null) nearScooter = scooter;
+
+                        if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
+                            nearScooter.lockScooter.unlock();
+                            nearScooter = scooter;
+                        }
                     }
+                    else scooter.lockScooter.unlock();
                 }
+                else scooter.lockScooter.unlock(); // ir libertando à medida
             }
-        }
 
-        for (Scooter scooter : this.scooters){
-            if(scooter != nearScooter){ // Mudar para equals
-                scooter.lockScooter.unlock();
-            }
-        }
-
-        try {
-            this.lockReservations.lock();
             if (nearScooter == null) {
                 throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
             }
-            this.cond.signal();
+
             nearScooter.setIsFree(false);
+
+            this.lockReservations.lock();
+            nearScooter.lockScooter.unlock();
+
             Reservation r = new Reservation(nearScooter, username);
+            this.reservationID = r.getReservationID(); // para a condição
             this.reservations.put(r.getReservationID(), r);
+
             return r; // clone???
         }
         finally {
-            if (nearScooter != null) nearScooter.lockScooter.unlock();
             this.lockReservations.unlock();
-            this.lockScooters.unlock();
         }
     }
 
@@ -234,39 +234,32 @@ public class ScooterManager {
      */
     public double parkScooter(int reservationID, Position parkingPosition){
         Scooter scooter = null;
-        Reservation reservation = null;
         LocalDateTime parkTimestamp = LocalDateTime.now();
         try{
-            this.lockScooters.lock(); // Para a variável de condição
             this.lockReservations.lock();
 
-            reservation = this.reservations.get(reservationID);
-            scooter = reservation.getScooter();
-            scooter.lockScooter.lock();
-
+            Reservation reservation = this.reservations.get(reservationID); // lançar exceção se for null
             this.reservations.remove(reservationID); // removemos do mapa?
-        }
-        finally {
+
+            scooter = reservation.getScooter();
+            this.reservationID = reservation.getReservationID(); // para a condição
+
+            scooter.lockScooter.lock();
             this.lockReservations.unlock();
-        }
-
-        try{
-            Position initialPosition = reservation.getInitialPosition();
-            double distance = initialPosition.distanceTo(parkingPosition);
-            double duration = ChronoUnit.MINUTES.between(parkTimestamp, reservation.getTimestamp()); // Segundos
-
-            double cost = ScooterManager.calculateCost(distance, duration);
 
             scooter.setPosition(parkingPosition);
             scooter.setIsFree(true);
 
-            this.reservationID = reservationID;
-            this.cond.signal();
+            Position initialPosition = reservation.getInitialPosition();
+            double distance = initialPosition.distanceTo(parkingPosition);
+            double duration = ChronoUnit.MINUTES.between(parkTimestamp, reservation.getTimestamp()); // Segundos
+            double cost = ScooterManager.calculateCost(distance, duration);
+
 
             return cost;
         }
         finally {
-            this.lockScooters.unlock();
+            this.cond.signal(); // acordar a thread
             scooter.lockScooter.unlock();
         }
     }
@@ -276,54 +269,61 @@ public class ScooterManager {
         // Para trotis em posições iguais, gerar recompensas
         int lastReservationID = -1;
         while(true){ // Quando for estacionada
-            while(this.reservationID == lastReservationID){
-                try{
-                    this.cond.await();
+            try{
+                this.lockRewards.lock();
+
+                while(this.reservationID == lastReservationID){
+                    try{
+                        this.cond.await();
+                    }
+                    catch (Exception ignored){ // mudar
+
+                    }
                 }
-                catch (Exception ignored){ // mudar
 
+                List<Position> positions = new ArrayList<Position>();
+                List<Scooter> toUnlock = new ArrayList<Scooter>();
+                for(Scooter s : this.scooters){
+                    s.lockScooter.lock();
+                    if(s.getIsFree()){
+                        toUnlock.add(s);
+                        positions.add(s.getPosition());
+                    }
+                    else s.lockScooter.unlock();
                 }
-            }
 
-            this.lockRewards.lock();
+                this.rewards.clear(); // Apagar as rewards que lá estavam
+                for(Position p1 : positions){
+                    if(positions.contains(p1)){ // Pelo menos 2 trotis no msm sítio
+                        for (int i = 0; i < N; i++){
+                            for (int j = 0; j < N; j++){
+                                boolean bool = true;
 
-            List<Position> positions = new ArrayList<Position>();
-            for(Scooter s : this.scooters){
-                s.lockScooter.lock();
-                if(s.getIsFree()){
-                    positions.add(s.getPosition());
-                }
-            }
-
-            this.rewards.clear(); // Apagar as rewards que lá estavam
-            for(Position p1 : positions){
-                if(positions.contains(p1)){ // Pelo menos 2 trotis no msm sítio
-                    for (int i = 0; i < N; i++){
-                        for (int j = 0; j < N; j++){
-                            boolean bool = true;
-
-                            for (Position p2 : positions){
-                                if(p2.inRadius(i, j, D)){
-                                    bool = false;
-                                    break;
+                                for (Position p2 : positions){
+                                    if(p2.inRadius(i, j, D)){
+                                        bool = false;
+                                        break;
+                                    }
                                 }
-                            }
 
-                            if(bool){
-                                this.rewards.add(new Reward(p1, new Position(i, j)));
+                                if(bool){
+                                    this.rewards.add(new Reward(p1, new Position(i, j)));
+                                }
                             }
                         }
                     }
                 }
+
+
+                for (Scooter s : toUnlock){
+                    s.lockScooter.unlock();
+                }
+
+                lastReservationID = this.reservationID;
             }
-
-
-            for (Scooter s : this.scooters){
-                s.lockScooter.unlock();
+            finally {
+                this.lockRewards.unlock();
             }
-
-            this.lockRewards.unlock();
-            lastReservationID = this.reservationID;
         }
     }
 
