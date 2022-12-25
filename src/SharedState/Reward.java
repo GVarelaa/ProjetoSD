@@ -1,5 +1,9 @@
 package SharedState;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class Reward {
     private Position initialPosition;
     private Position finalPosition;
@@ -38,5 +42,15 @@ public class Reward {
     private double calculateValue(){
         double distance = this.initialPosition.distanceTo(this.finalPosition);
         return distance * 1; // 1 euro / km ??
+    }
+
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(16);
+        DataOutputStream os = new DataOutputStream(byteArray);
+
+        os.write(this.initialPosition.serialize());
+        os.write(this.finalPosition.serialize());
+
+        return byteArray.toByteArray();
     }
 }

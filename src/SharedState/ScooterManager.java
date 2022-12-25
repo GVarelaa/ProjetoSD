@@ -21,8 +21,9 @@ public class ScooterManager {
     private List<Reward> rewards;
     private Map<Integer, Reservation> reservations;
     private ReentrantLock lock; // lock global
-    private ReentrantLock lockRewards;
-    private Condition cond;
+    public ReentrantLock lockRewards;
+    private Condition rewardsCond;
+    public Condition notificationsCond;
     private ReentrantLock lockReservations;
 
     private Map<String, Position> userNotifications; // Map<username, position>
@@ -38,7 +39,9 @@ public class ScooterManager {
         this.reservations = new HashMap<>();
         this.lockRewards = new ReentrantLock();
         this.lockReservations = new ReentrantLock();
-        this.cond = this.lockRewards.newCondition();
+        this.rewardsCond = this.lockRewards.newCondition();
+        this.notificationsCond = this.lockReservations.newCondition();
+
         this.reservationID = -1;
 
         this.randomizeScooterPositions();
@@ -259,7 +262,7 @@ public class ScooterManager {
             return cost;
         }
         finally {
-            this.cond.signal(); // acordar a thread
+            this.rewardsCond.signal(); // acordar a thread
             scooter.lockScooter.unlock();
         }
     }
@@ -274,7 +277,7 @@ public class ScooterManager {
 
                 while(this.reservationID == lastReservationID){
                     try{
-                        this.cond.await();
+                        this.rewardsCond.await();
                     }
                     catch (Exception ignored){ // mudar
 
@@ -460,6 +463,43 @@ public class ScooterManager {
 
         return count;
     }
+
+    public List<Reward> getRewardsFromPosition(Position p){
+        List<Reward> rewards = new ArrayList<Reward>();
+
+        for(Reward r : this.rewards){
+            Position pos = r.getInitialPosition();
+
+            if(pos.inRadius(p, D)){
+                rewards.add(r);
+            }
+        }
+
+        return rewards;
+    }
+
+    public List<Reward> askForNotifications(Position p){
+        try{
+            this.lockRewards.lock();
+
+            List<Reward> rewards = null;
+
+            while((rewards = this.getRewardsFromPosition(p)) == null){ // Condição : enquanto não houver recompensas no seu raio, adormece
+                try{
+                    this.notificationsCond.await();
+                }
+                catch (Exception ignored){
+
+                }
+            }
+
+            return rewards;
+        }
+        finally {
+            this.lockRewards.unlock();
+        }
+    }
+
 
     /**
      * Sets a client (identified by username) available to receive notifications for when rewards appear in a radius D (pre-configured) of a given position

@@ -7,10 +7,12 @@ import SharedState.User;
 import SharedState.UserManager;
 import SharedState.Position;
 import SharedState.Reservation;
+import SharedState.Reward;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -143,11 +145,20 @@ class ServerWorker implements Runnable{
                     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
                     DataInputStream is = new DataInputStream(byteInputStream);
                     boolean onOff = is.readBoolean();
-                    if (onOff == false){
-                        System.out.println("Notifications Off!");
-                    }
-                    else if (onOff == true){
-                        System.out.println("Notifications On!");
+
+                    if (onOff == true){ // Ler a posição
+                        int x = is.readInt();
+                        int y = is.readInt();
+                        Position p = new Position(x, y);
+                        List<Reward> rewards = new ArrayList<Reward>();
+
+                        while(true){
+                            rewards = this.sharedState.askForNotifications(p);
+
+                            for(Reward r : rewards){
+                                this.connection.send(7, r.serialize());
+                            }
+                        }
                     }
                 }
             }
