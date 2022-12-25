@@ -1,12 +1,12 @@
 package SharedState;
 
 import Exceptions.NoScootersAvailableException;
-import Exceptions.NonExistantUsernameException;
+import Exceptions.NonExistentUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 
 import java.util.List;
 
-public interface ISharedState {
+public interface IScooterManager {
     /**
      * Register a user in the server
      * @param username username of the user
@@ -20,9 +20,9 @@ public interface ISharedState {
      * @param username username of the user
      * @param password password of the user
      * @return if the user is logged in or not
-     * @throws NonExistantUsernameException error if the username doesn't exist in the users collection
+     * @throws NonExistentUsernameException error if the username doesn't exist in the users collection
      */
-    boolean login(String username, String password) throws NonExistantUsernameException;
+    boolean login(String username, String password) throws NonExistentUsernameException;
 
     /**
      * List the available scooters in a radius D (pre-configured) of p
@@ -57,17 +57,16 @@ public interface ISharedState {
     double parkScooter(int reservationId, Position parkingPosition);
 
     /**
-     * Sets a client (identified by username) available to receive notifications for when rewards appear in a radius D (pre-configured) of a given position
-     * Rewards will be sent later
-     * @param username username of the client
-     * @param p center of radius where notifications of rewards may be applicable
+     * Check if there are rewards on the radius of a given position and waits if there are no rewards
+     * @param p Position
+     * @return List of rewards on the radius of a given position
      */
-    void askForNotifications(String username, Position p);
+    List<Reward> userNotifications(Position p);
 
     /**
-     * Cancel notifications for a given client
-     * @param username username of the client
+     * Changes the notifications state on a user
+     * @param username Username
+     * @param notificationsState New notifications state
      */
-    void cancelNotifications(String username);
-
+    void changeNotificationsState(String username, boolean notificationsState);
 }

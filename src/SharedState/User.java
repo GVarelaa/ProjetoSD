@@ -1,27 +1,33 @@
 package SharedState;
 
 import java.io.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class User {
     private String username;
     private String password;
     private boolean notificationsState;
+    public ReentrantLock lock;
 
     public User() {
         this.username = "";
         this.password = "";
         this.notificationsState = false;
+        this.lock = new ReentrantLock();
     }
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
         this.notificationsState = false;
+        this.lock = new ReentrantLock();
     }
 
     public User(User c) {
         this.username = c.getUsername();
         this.password = c.getPassword();
+        this.notificationsState = c.getNotificationsState();
+        this.lock = new ReentrantLock();
     }
 
     public String getUsername() {

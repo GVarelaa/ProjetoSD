@@ -1,13 +1,9 @@
 import Connections.TaggedConnection;
 import Exceptions.NoScootersAvailableException;
-import Exceptions.NonExistantUsernameException;
+import Exceptions.NonExistentUsernameException;
+import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
-import SharedState.SharedState;
-import SharedState.User;
-import SharedState.UserManager;
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.Reward;
+import SharedState.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -18,25 +14,26 @@ import java.util.List;
 
 class ServerWorker implements Runnable{
     private TaggedConnection connection;
-    private SharedState sharedState;
+    private ScooterManager scooterManager;
+    private String clientUsername; //username do cliente - lock?
 
-    public ServerWorker(TaggedConnection connection, SharedState sharedState){
+    public ServerWorker(TaggedConnection connection, ScooterManager scooterManager){
         this.connection = connection;
-        this.sharedState = sharedState;
+        this.scooterManager = new ScooterManager();
+        this.clientUsername = null;
     }
 
     @Override
     public void run(){
         try{
             // Session state
-            boolean notificationsOn = false;
             while (true){
                 TaggedConnection.Frame frame = this.connection.receive();
 
                 if(frame.tag == 1){   // é um pedido de registo
                     User user = User.deserialize(frame.data);
                     try{
-                        this.sharedState.register(user.getUsername(), user.getPassword());
+                        this.scooterManager.register(user.getUsername(), user.getPassword());
 
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
                         DataOutputStream os = new DataOutputStream(byteStream);
@@ -56,15 +53,17 @@ class ServerWorker implements Runnable{
                     User user = User.deserialize(frame.data);
 
                     try{
-                        this.sharedState.login(user.getUsername(), user.getPassword());
+                        this.scooterManager.login(user.getUsername(), user.getPassword());
 
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
                         DataOutputStream os = new DataOutputStream(byteStream);
                         os.writeBoolean(true); // All good
 
+                        this.clientUsername = user.getUsername();
+
                         this.connection.send(2, byteStream.toByteArray());
                     }
-                    catch(NonExistantUsernameException e){
+                    catch(NonExistentUsernameException e){
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
                         DataOutputStream os = new DataOutputStream(byteStream);
                         os.writeBoolean(false); // Something went wrong
@@ -74,7 +73,7 @@ class ServerWorker implements Runnable{
                 }
                 else if(frame.tag == 3){
                     Position p = Position.deserialize(frame.data);
-                    List<Position> positions = this.sharedState.listFreeScooters(p);
+                    List<Position> positions = this.scooterManager.listFreeScooters(p);
 
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
                     DataOutputStream os = new DataOutputStream(byteStream);
@@ -88,7 +87,7 @@ class ServerWorker implements Runnable{
                 }
                 else if (frame.tag == 4) {
                     Position p = Position.deserialize(frame.data);
-                    List<Position> positions = this.sharedState.listRewards(p);
+                    List<Position> positions = this.scooterManager.listRewards(p);
 
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
                     DataOutputStream os = new DataOutputStream(byteStream);
@@ -108,7 +107,7 @@ class ServerWorker implements Runnable{
                     String username = is.readUTF();
 
                     try {
-                        Reservation reservation = this.sharedState.activateScooter(p, username);
+                        Reservation reservation = this.scooterManager.activateScooter(p, username);
 
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(13); // (x) 4 bytes + (y) 4 bytes + (reservation_id) 4 bytes + (bool) 1 byte
                         DataOutputStream os = new DataOutputStream(byteStream);
@@ -133,7 +132,7 @@ class ServerWorker implements Runnable{
                     DataInputStream is = new DataInputStream(byteInputStream);
                     int reservationID = is.readInt();
 
-                    double cost = this.sharedState.parkScooter(reservationID, p);
+                    double cost = this.scooterManager.parkScooter(reservationID, p);
 
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 8 - double
                     DataOutputStream os = new DataOutputStream(byteStream);
@@ -144,16 +143,22 @@ class ServerWorker implements Runnable{
                 else if (frame.tag == 7){
                     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
                     DataInputStream is = new DataInputStream(byteInputStream);
-                    boolean onOff = is.readBoolean();
+                    boolean notificationsOn = is.readBoolean();
+                    this.scooterManager.changeNotificationsState(this.clientUsername, notificationsOn);
 
-                    if (onOff == true){ // Ler a posição
+                    if (notificationsOn){ // Ler a posição
                         int x = is.readInt();
                         int y = is.readInt();
                         Position p = new Position(x, y);
                         List<Reward> rewards = new ArrayList<Reward>();
 
                         while(true){
-                            rewards = this.sharedState.askForNotifications(p);
+                            try {
+                                rewards = this.scooterManager.userNotifications(p);
+                            }
+                            catch (NotificationsDisabledException e) {
+                                break;
+                            }
 
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);
@@ -164,7 +169,6 @@ class ServerWorker implements Runnable{
                                 this.connection.send(7, r.serialize());
                             }
                         }
-
                     }
                 }
             }
@@ -180,12 +184,12 @@ public class Server {
     final static int WORKERS_PER_CONNECTION = 3;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        SharedState sharedState = new SharedState();
+        ScooterManager scooterManager = new ScooterManager();
 
         while(true){
             Socket socket = serverSocket.accept();
             TaggedConnection connection = new TaggedConnection(socket);
-            ServerWorker serverWorker = new ServerWorker(connection, sharedState);
+            ServerWorker serverWorker = new ServerWorker(connection, scooterManager);
 
             for(int i = 0; i < WORKERS_PER_CONNECTION; i++){
                 new Thread(serverWorker).start();

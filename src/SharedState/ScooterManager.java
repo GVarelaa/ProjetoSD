@@ -1,24 +1,23 @@
 package SharedState;
 
 import Exceptions.NoScootersAvailableException;
+import Exceptions.NonExistentUsernameException;
+import Exceptions.NotificationsDisabledException;
+import Exceptions.UsernameAlreadyExistsException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManager {
     private final static int D = 2;
     private final static int N = 10; // dimensão do mapa
     private final static int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
-
+    private Map<String, User> users;
+    private ReentrantLock lockUsers;
     private Map<Integer, Reservation> reservations;
     private ReentrantLock lockReservations;
     private List<Reward> rewards;
@@ -33,9 +32,11 @@ public class ScooterManager {
      */
     public ScooterManager(){
         this.scooters = new Scooter[S];
+        this.users = new HashMap<>();
+        this.lockUsers = new ReentrantLock();
         this.rewards = new ArrayList<>();
-        this.reservations = new HashMap<>();
         this.lockRewards = new ReentrantLock();
+        this.reservations = new HashMap<>();
         this.lockReservations = new ReentrantLock();
         this.rewardsCond = this.lockRewards.newCondition();
         this.notificationsCond = this.lockReservations.newCondition();
@@ -47,6 +48,61 @@ public class ScooterManager {
         new Thread(() -> {
             this.generateRewards();
         }).start();
+    }
+
+    public void register(String username, String password) throws UsernameAlreadyExistsException {
+        try{
+            this.lockUsers.lock();
+
+            if(this.users.containsKey(username)){
+                throw new UsernameAlreadyExistsException("Username " + username + " already exists!");
+            }
+
+            User newUser = new User(username, password);
+            this.users.put(username, newUser);
+        }
+        finally {
+            this.lockUsers.unlock();
+        }
+    }
+
+    public boolean login(String username, String password) throws NonExistentUsernameException {
+        try{
+            this.lockUsers.lock();
+
+            if(!this.users.containsKey(username)){
+                throw new NonExistentUsernameException("Username " + username + " doesn't exist!");
+            }
+
+            User user = this.users.get(username);
+
+            return user.getUsername().equals(username) && user.getPassword().equals(password);
+        }
+        finally {
+            this.lockUsers.unlock();
+        }
+    }
+
+    public void changeNotificationsState(String username, boolean notificationsState) {
+        User user = null;
+
+        try {
+            this.lockUsers.lock();
+
+            user = this.users.get(username);
+
+            user.lock.lock();
+        }
+        finally {
+            this.lockUsers.unlock();
+        }
+
+        try {
+            user.setNotificationsState(notificationsState);
+        }
+        finally {
+            user.lock.unlock();
+        }
     }
 
     /**
@@ -462,6 +518,11 @@ public class ScooterManager {
         return count;
     }
 
+    /**
+     * Gets the rewards on the radius of a given position
+     * @param p Position
+     * @return List of rewards
+     */
     public List<Reward> getRewardsFromPosition(Position p){
         List<Reward> rewards = new ArrayList<Reward>();
 
@@ -476,15 +537,43 @@ public class ScooterManager {
         return rewards;
     }
 
-    public List<Reward> askForNotifications(Position p){
+    /**
+     * Check if there are rewards on the radius of a given position and waits if there are no rewards
+     * @param p Position
+     * @return List of rewards on the radius of a given position
+     */
+    public List<Reward> userNotifications(String username, Position p){
         try{
             this.lockRewards.lock();
 
             List<Reward> rewards = null;
 
             while((rewards = this.getRewardsFromPosition(p)) == null){ // Condição : enquanto não houver recompensas no seu raio, adormece
+                User u = null;
+
                 try{
                     this.notificationsCond.await();
+
+                    //verificar se as notificações estão desativadas
+                    try {
+                        this.lockUsers.lock();
+
+                        u = this.users.get(username);
+
+                        u.lock.lock();
+                    }
+                    finally {
+                        this.lockUsers.unlock();
+                    }
+
+                    try {
+                        if (!u.getNotificationsState()) {
+                            throw new NotificationsDisabledException("Notifications are disabled!");
+                        }
+                    }
+                    finally {
+                        u.lock.unlock();
+                    }
                 }
                 catch (Exception ignored){
 
@@ -495,31 +584,6 @@ public class ScooterManager {
         }
         finally {
             this.lockRewards.unlock();
-        }
-    }
-
-
-    /**
-     * Sets a client (identified by username) available to receive notifications for when rewards appear in a radius D (pre-configured) of a given position
-     * Rewards will be sent later
-     * @param username username of the client
-     * @param p center of radius where notifications of rewards may be applicable
-     */
-    public void askForNotifications(String username, Position p) {
-        // Only does something if there isn't already a notification for that user
-        if (this.userNotifications.get(username) == null){
-
-        }
-    }
-
-    /**
-     * Cancel notifications for a given client
-     * @param username username of the client
-     */
-    public void cancelNotifications(String username) {
-        // Only does something if there is already a notification for that user
-        if (this.userNotifications.get(username) != null){
-
         }
     }
 }
