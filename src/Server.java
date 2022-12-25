@@ -155,10 +155,16 @@ class ServerWorker implements Runnable{
                         while(true){
                             rewards = this.sharedState.askForNotifications(p);
 
+                            ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
+                            DataOutputStream os = new DataOutputStream(byteStream);
+                            os.writeInt(rewards.size());
+
+                            this.connection.send(7, byteStream.toByteArray()); // Comprimento da lista de recompensas
                             for(Reward r : rewards){
                                 this.connection.send(7, r.serialize());
                             }
                         }
+
                     }
                 }
             }

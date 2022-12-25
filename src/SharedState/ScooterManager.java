@@ -18,15 +18,13 @@ public class ScooterManager {
     private final static int N = 10; // dimensão do mapa
     private final static int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
-    private List<Reward> rewards;
+
     private Map<Integer, Reservation> reservations;
-    private ReentrantLock lock; // lock global
+    private ReentrantLock lockReservations;
+    private List<Reward> rewards;
     public ReentrantLock lockRewards;
     private Condition rewardsCond;
     public Condition notificationsCond;
-    private ReentrantLock lockReservations;
-
-    private Map<String, Position> userNotifications; // Map<username, position>
     private int reservationID; // Para a condição da variável de condição
 
 
