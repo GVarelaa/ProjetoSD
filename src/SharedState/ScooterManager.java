@@ -388,7 +388,7 @@ public class ScooterManager {
     /**
      * Daemon that evaluates current scooter distribution and tries to optimize it, generating rewards
      */
-    public void generateRewards(){
+    /*public void generateRewards(){
         System.out.println("Matrix inicial");
         int[][] matrix = this.convertToMatrix(); // Será uma variável partilhada depois
         this.printMatrix(matrix);
@@ -425,7 +425,7 @@ public class ScooterManager {
             count++;
 
         }
-    }
+    }*/
 
     /**
      * Updates the count in each position after a scooter is moved

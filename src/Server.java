@@ -26,7 +26,6 @@ class ServerWorker implements Runnable{
     @Override
     public void run(){
         try{
-            // Session state
             while (true){
                 TaggedConnection.Frame frame = this.connection.receive();
 
@@ -104,10 +103,10 @@ class ServerWorker implements Runnable{
 
                     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
                     DataInputStream is = new DataInputStream(byteInputStream);
-                    String username = is.readUTF();
+                    //String username = is.readUTF();
 
                     try {
-                        Reservation reservation = this.scooterManager.activateScooter(p, username);
+                        Reservation reservation = this.scooterManager.activateScooter(p, this.clientUsername);
 
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(13); // (x) 4 bytes + (y) 4 bytes + (reservation_id) 4 bytes + (bool) 1 byte
                         DataOutputStream os = new DataOutputStream(byteStream);
@@ -153,12 +152,9 @@ class ServerWorker implements Runnable{
                         List<Reward> rewards = new ArrayList<Reward>();
 
                         while(true){
-                            try {
-                                rewards = this.scooterManager.userNotifications(p);
-                            }
-                            catch (NotificationsDisabledException e) {
-                                break;
-                            }
+
+                            rewards = this.scooterManager.userNotifications(this.clientUsername, p);
+
 
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);

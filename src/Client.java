@@ -157,20 +157,19 @@ public class Client {
      * Waits for the response of the server
      * TODO test it!
      * @param p the position sent
-     * @param username Username
      * @return a reservation (id and initial position)
      * @throws IOException
      * @throws InterruptedException
      */
-    public Reservation activateScooter(Position p, String username) throws IOException, InterruptedException {
+    public Reservation activateScooter(Position p) throws IOException, InterruptedException {
         //Thread activateScooter = new Thread(() -> {
             try{
-                int size = 8 + 2 + username.length(); // (x)4 + (y)4 bytes + (username_size)2 bytes + username
+                int size = 8 + 2;;// + username.length(); // (x)4 + (y)4 bytes + (username_size)2 bytes + username
                 ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
                 DataOutputStream os = new DataOutputStream(byteArray);
                 os.writeInt(p.getX());
                 os.writeInt(p.getY());
-                os.writeUTF(username);
+                //os.writeUTF(username);
 
                 this.multiplexer.send(5, byteArray.toByteArray());
 
