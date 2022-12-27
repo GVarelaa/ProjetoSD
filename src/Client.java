@@ -183,8 +183,8 @@ public class Client {
                 if (returnCode >= 0) {
                     int x = is.readInt();
                     int y = is.readInt();
-                    int codReservation = is.readInt();
-                    reservation = new Reservation(codReservation, new Position(x, y)) ;
+                    //int codReservation = is.readInt();
+                    reservation = new Reservation(returnCode, new Position(x, y)) ;
                 }
                 else {
                     return null;

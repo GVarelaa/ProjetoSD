@@ -258,7 +258,6 @@ public class ScooterManager {
             }
 
             if (nearScooter == null) {
-                nearScooter.lockScooter.unlock();
                 throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
             }
 
@@ -270,6 +269,7 @@ public class ScooterManager {
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
             this.reservations.put(r.getReservationID(), r);
+            System.out.println(this.reservationID);
 
             return r; // clone???
         }
