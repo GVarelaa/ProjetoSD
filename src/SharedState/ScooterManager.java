@@ -317,24 +317,32 @@ public class ScooterManager {
             scooter = reservation.getScooter();
             this.reservationID = reservation.getReservationID(); // para a condição
 
+            Position initialPosition = reservation.getInitialPosition();
+            double distance = initialPosition.distanceTo(parkingPosition);
+            double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
+            double cost = ScooterManager.calculateCost(distance, duration);
+
+            this.lockRewards.lock();
+
+            for(Reward r: this.rewards){ // Verificar se é uma recompensa
+                if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){
+                    cost = r.getValue();
+                }
+            }
+
             scooter.lockScooter.lock();
             this.lockReservations.unlock();
 
             scooter.setPosition(parkingPosition);
             scooter.setIsFree(true);
 
-            Position initialPosition = reservation.getInitialPosition();
-            double distance = initialPosition.distanceTo(parkingPosition);
-            double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
-            double cost = ScooterManager.calculateCost(distance, duration);
-
+            this.rewardsCond.signal(); // acordar a thread
+            this.lockRewards.unlock();
 
             return cost;
         }
         finally {
-            this.lockRewards.lock();
-            this.rewardsCond.signal(); // acordar a thread
-            this.lockRewards.unlock();
+
             scooter.lockScooter.unlock();
         }
     }
