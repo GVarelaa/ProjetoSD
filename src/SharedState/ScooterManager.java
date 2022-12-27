@@ -325,14 +325,16 @@ public class ScooterManager {
 
             Position initialPosition = reservation.getInitialPosition();
             double distance = initialPosition.distanceTo(parkingPosition);
-            double duration = ChronoUnit.MINUTES.between(parkTimestamp, reservation.getTimestamp()); // Segundos
+            double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
             double cost = ScooterManager.calculateCost(distance, duration);
 
 
             return cost;
         }
         finally {
+            this.lockRewards.lock();
             this.rewardsCond.signal(); // acordar a thread
+            this.lockRewards.unlock();
             scooter.lockScooter.unlock();
         }
     }

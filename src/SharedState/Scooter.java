@@ -30,7 +30,7 @@ public class Scooter {
     }
 
     public void setPosition(Position pos) {
-        this.position = position;
+        this.position = pos;
     }
 
     public boolean getIsFree() { return this.isFree; }

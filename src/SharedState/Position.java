@@ -1,5 +1,6 @@
 package SharedState;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 
 public class Position {
@@ -62,8 +63,7 @@ public class Position {
         return Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2));
     }
 
-    public static Position deserialize(byte[] data) throws IOException {
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+    public static Position deserialize(DataInputStream is) throws IOException {
         int x = is.readInt();
         int y = is.readInt();
 

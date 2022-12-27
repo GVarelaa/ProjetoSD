@@ -158,7 +158,14 @@ public class RunClient {
         System.out.println("y: ");
         int y = sc.nextInt();
 
-        c.parkScooter(new Position(x, y), codReservation);
+        double cost = c.parkScooter(new Position(x, y), codReservation);
+
+        if (cost > 0){
+            System.out.println("Prémio da recompensa: " + cost);
+        }
+        else if (cost < 0){
+            System.out.println("Custo da viagem: " + cost);
+        }
     }
 
     private static void turnOnNotificationsMenu(Scanner sc, Client c){

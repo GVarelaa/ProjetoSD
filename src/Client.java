@@ -126,7 +126,7 @@ public class Client {
                 this.multiplexer.send(4, byteArray.toByteArray());
 
                 // get reply
-                byte[] data = this.multiplexer.receive(4);
+                    byte[] data = this.multiplexer.receive(4);
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
                 List<List<Position>> rewards = new ArrayList<>();

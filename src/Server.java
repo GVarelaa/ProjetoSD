@@ -75,7 +75,9 @@ class ServerWorker implements Runnable{
                     }
                 }
                 else if(frame.tag == 3){
-                    Position p = Position.deserialize(frame.data);
+                    ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
+                    DataInputStream is = new DataInputStream(byteInputStream);
+                    Position p = Position.deserialize(is);
                     List<Position> positions = this.scooterManager.listFreeScooters(p);
 
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
@@ -89,7 +91,9 @@ class ServerWorker implements Runnable{
                     this.connection.send(3, byteStream.toByteArray());
                 }
                 else if (frame.tag == 4) {
-                    Position p = Position.deserialize(frame.data);
+                    ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
+                    DataInputStream is = new DataInputStream(byteInputStream);
+                    Position p = Position.deserialize(is);
                     List<List<Position>> rewards = this.scooterManager.listRewards(p);
 
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + rewards.size()*8);
@@ -104,11 +108,9 @@ class ServerWorker implements Runnable{
                     this.connection.send(4, byteStream.toByteArray());
                 }
                 else if (frame.tag == 5) {
-                    Position p = Position.deserialize(frame.data);
-
                     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
                     DataInputStream is = new DataInputStream(byteInputStream);
-                    //String username = is.readUTF();
+                    Position p = Position.deserialize(is);
 
                     try {
                         Reservation reservation = this.scooterManager.activateScooter(p, this.clientUsername);
@@ -130,10 +132,12 @@ class ServerWorker implements Runnable{
                     }
                 }
                 else if (frame.tag == 6) {
-                    Position p = Position.deserialize(frame.data);
-
                     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);
                     DataInputStream is = new DataInputStream(byteInputStream);
+
+                    Position p = Position.deserialize(is);
+
+
                     int reservationID = is.readInt();
 
                     double cost = this.scooterManager.parkScooter(reservationID, p);
