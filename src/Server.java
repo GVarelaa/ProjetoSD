@@ -29,6 +29,10 @@ class ServerWorker implements Runnable{
             while (true){
                 TaggedConnection.Frame frame = this.connection.receive();
 
+                if (frame.tag != 1 && frame.tag != 2 && clientUsername == null){
+                    continue;
+                }
+
                 if(frame.tag == 1){   // é um pedido de registo
                     User user = User.deserialize(frame.data);
                     try{

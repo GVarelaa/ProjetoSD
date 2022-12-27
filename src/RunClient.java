@@ -1,7 +1,9 @@
 import SharedState.Position;
 import SharedState.Reservation;
+import SharedState.Reward;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 public class RunClient {
@@ -11,30 +13,8 @@ public class RunClient {
 
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("============");
-        System.out.println("1... Sign up");
-        System.out.println("2... Sign in");
-        System.out.println("============");
-
-        int opt = sc.nextInt();
-
-        if (opt == 1 || opt == 2) {
-            System.out.println("Introduza o username: ");
-            String username = sc.next();
-            System.out.println("Introduza a password: ");
-            String password = sc.next();
-
-            if (opt == 1) client.register(username, password);
-            else client.login(username, password);
-        }
-
-
-        //String username = "guilherme";
-        //String password = "lol";
-
-        //boolean flag = client.register(username, password);
-        //client.turnOnNotifications(true, new Position(0,0));
-        //System.out.println(flag);
+        RunClient.loginMenu(sc, client);
+        RunClient.showMenu(sc, client);
 
         client.close();
     }
@@ -43,13 +23,12 @@ public class RunClient {
         int codReservation = 0;
         while (true){
             System.out.println("============");
-            System.out.println("1... Sign up");
-            System.out.println("2... Sign in");
             System.out.println("3... Show available scooters");
             System.out.println("4... Activate scooter");
             System.out.println("5... Park scooter");
             System.out.println("6... Turn on notifications");
             System.out.println("7... Turn off notifications");
+            System.out.println("8... Mostrar recompensas");
             System.out.println("============");
 
             int opt = sc.nextInt();
@@ -76,11 +55,16 @@ public class RunClient {
                 case 7:
                     c.turnOnNotifications(false, null);
                     break;
+                case 8:
+                    showRewardsMenu(sc, c);
             }
         }
     }
 
-    private static void signUpMenu(Scanner sc, Client c) throws IOException, InterruptedException {
+    private static boolean signUpMenu(Scanner sc, Client c) throws IOException, InterruptedException {
+        System.out.println("============");
+        System.out.println("Registar utilizador");
+        System.out.println("============");
         System.out.println("Introduza o username: ");
         String username = sc.next();
         System.out.println("Introduza a password: ");
@@ -93,9 +77,13 @@ public class RunClient {
         else {
             System.out.println("Registo não efetuado!");
         }
+        return success;
     }
 
-    private static void signInMenu(Scanner sc, Client c) throws IOException, InterruptedException {
+    private static boolean signInMenu(Scanner sc, Client c) throws IOException, InterruptedException {
+        System.out.println("============");
+        System.out.println("Autenticar utilizador");
+        System.out.println("============");
         System.out.println("Introduza o username: ");
         String username = sc.next();
         System.out.println("Introduza a password: ");
@@ -108,6 +96,21 @@ public class RunClient {
         else {
             System.out.println("Login inválido!");
         }
+        return success;
+    }
+
+    private static void loginMenu(Scanner sc, Client c) throws IOException, InterruptedException {
+        boolean registered = false;
+
+        while (!registered){
+            registered = signUpMenu(sc, c);
+        }
+
+        boolean loggedIn = false;
+
+        while (!loggedIn){
+            loggedIn = signInMenu(sc, c);
+        }
     }
 
     private static void showScootersMenu(Scanner sc, Client c) throws IOException, InterruptedException {
@@ -117,7 +120,14 @@ public class RunClient {
         System.out.println("y: ");
         int y = sc.nextInt();
 
-        c.listFreeScooters(new Position(x, y));
+        Position p = new Position(x, y);
+        List<Position> availScooters = c.listFreeScooters(p);
+        if (availScooters.size() == 0){
+            System.out.println("Nenhuma scooter livre perto de " + p.toString());
+        }
+        for(Position pos: availScooters){
+            System.out.println("Scooter livre em " + pos.toString());
+        }
     }
 
     private static int activateScooterMenu(Scanner sc, Client c) throws IOException, InterruptedException {
@@ -129,7 +139,7 @@ public class RunClient {
 
         Reservation r = c.activateScooter(new Position(x, y));
 
-        System.out.println("Scooter na posição: " + r.getScooter().getPosition().toString());
+        System.out.println("Scooter na posição: " + r.getInitialPosition().toString());
         System.out.println("Reservation ID: " + r.getReservationID());
         return r.getReservationID();
     }
@@ -152,6 +162,25 @@ public class RunClient {
         int y = sc.nextInt();
 
         c.turnOnNotifications(true, new Position(x, y));
+    }
+
+    private static void showRewardsMenu(Scanner sc, Client c) throws IOException, InterruptedException {
+        System.out.println("Indique a posição");
+        System.out.println("x: ");
+        int x = sc.nextInt();
+        System.out.println("y: ");
+        int y = sc.nextInt();
+
+        Position p = new Position(x, y);
+        List<List<Position>> rewards = c.listRewards(p);
+
+        if (rewards.size() == 0){
+            System.out.println("Não há recompensas perto de " + p.toString());
+        }
+
+        for(List<Position> reward: rewards){
+            System.out.println("Recompensa disponível de " + reward.get(0).toString() + " para " + reward.get(1).toString());
+        }
     }
 
 

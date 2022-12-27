@@ -53,4 +53,8 @@ public class Reward {
 
         return byteArray.toByteArray();
     }
+
+    public String toString(){
+        return initialPosition.toString() + " -> " + finalPosition.toString();
+    }
 }
