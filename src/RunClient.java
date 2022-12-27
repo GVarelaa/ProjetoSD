@@ -176,6 +176,10 @@ public class RunClient {
         int y = sc.nextInt();
 
         c.turnOnNotifications(true, new Position(x, y));
+        Thread t = new Thread(() -> {
+            c.waitForNotifications();
+        });
+        t.start();
     }
 
     private static void showRewardsMenu(Scanner sc, Client c) throws IOException, InterruptedException {
@@ -196,6 +200,7 @@ public class RunClient {
             System.out.println("Recompensa disponível de " + reward.get(0).toString() + " para " + reward.get(1).toString());
         }
     }
+
 
 
 }

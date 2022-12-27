@@ -158,10 +158,9 @@ class ServerWorker implements Runnable{
                         int x = is.readInt();
                         int y = is.readInt();
                         Position p = new Position(x, y);
-                        List<Reward> rewards = new ArrayList<Reward>();
+                        List<Reward> rewards;
 
                         while(true){
-
                             rewards = this.scooterManager.userNotifications(this.clientUsername, p);
 
 

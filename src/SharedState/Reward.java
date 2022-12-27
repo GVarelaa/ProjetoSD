@@ -1,6 +1,7 @@
 package SharedState;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -52,6 +53,13 @@ public class Reward {
         os.write(this.finalPosition.serialize());
 
         return byteArray.toByteArray();
+    }
+
+    public static Reward deserialize(DataInputStream is) throws IOException {
+        Position initialPosition = Position.deserialize(is);
+        Position finalPosition = Position.deserialize(is);
+
+        return new Reward(initialPosition, finalPosition);
     }
 
     public String toString(){

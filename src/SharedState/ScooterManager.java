@@ -310,6 +310,7 @@ public class ScooterManager {
         LocalDateTime parkTimestamp = LocalDateTime.now();
         try{
             this.lockReservations.lock();
+            Thread.sleep(10000);
 
             Reservation reservation = this.reservations.get(reservationID); // lançar exceção se for null
             this.reservations.remove(reservationID); // removemos do mapa?
@@ -327,6 +328,7 @@ public class ScooterManager {
             for(Reward r: this.rewards){ // Verificar se é uma recompensa
                 if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){
                     cost = r.getValue();
+                    this.rewards.remove(r);
                 }
             }
 
@@ -340,8 +342,9 @@ public class ScooterManager {
             this.lockRewards.unlock();
 
             return cost;
-        }
-        finally {
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
 
             scooter.lockScooter.unlock();
         }

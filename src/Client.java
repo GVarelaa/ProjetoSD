@@ -126,7 +126,7 @@ public class Client {
                 this.multiplexer.send(4, byteArray.toByteArray());
 
                 // get reply
-                    byte[] data = this.multiplexer.receive(4);
+                byte[] data = this.multiplexer.receive(4);
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
                 List<List<Position>> rewards = new ArrayList<>();
@@ -257,6 +257,32 @@ public class Client {
 
         }
 
+    }
+
+
+    /**
+     * Method that waits for notifications from the server regarding rewards near a position specified before
+     */
+    public void waitForNotifications(){
+        try {
+            while (true) {
+                byte[] data = this.multiplexer.receive(7);
+                DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+                List<Reward> rewards = new ArrayList<>();
+
+                int length = is.readInt();
+                for(int i=0; i<length; i++){
+                    Reward r = Reward.deserialize(is);
+                    rewards.add(r);
+                }
+
+                for(int i=0; i<length; i++){
+                    System.out.println(rewards.get(i).toString());
+                }
+            }
+        } catch (Exception e){
+
+        }
     }
 
 }
