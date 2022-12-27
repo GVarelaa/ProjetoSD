@@ -90,14 +90,15 @@ class ServerWorker implements Runnable{
                 }
                 else if (frame.tag == 4) {
                     Position p = Position.deserialize(frame.data);
-                    List<Position> positions = this.scooterManager.listRewards(p);
+                    List<List<Position>> rewards = this.scooterManager.listRewards(p);
 
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + positions.size()*8);
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4 + rewards.size()*8);
                     DataOutputStream os = new DataOutputStream(byteStream);
 
-                    os.writeInt(positions.size());
-                    for (Position pos : positions) {
-                        os.write(pos.serialize());
+                    os.writeInt(rewards.size());
+                    for (List<Position> list : rewards) {
+                        os.write(list.get(0).serialize());
+                        os.write(list.get(1).serialize());
                     }
 
                     this.connection.send(4, byteStream.toByteArray());

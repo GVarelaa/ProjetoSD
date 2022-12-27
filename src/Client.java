@@ -147,7 +147,7 @@ public class Client {
 
                 return rewards;
             }
-            catch(Exception ignored){}
+            catch(IOException ignored){}
             return null;
         //}).start();
     }

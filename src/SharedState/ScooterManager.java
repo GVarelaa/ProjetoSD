@@ -205,8 +205,8 @@ public class ScooterManager {
      * @param p center of radius where rewards will be checked
      * @return a list of the positions of the rewards
      */
-    public List<Position> listRewards(Position p) {
-        List<Position> rewards = new ArrayList<>();
+    public List<List<Position>> listRewards(Position p) {
+        List<List<Position>> rewards = new ArrayList<>();
 
         try {
             this.lockRewards.lock();
@@ -214,7 +214,10 @@ public class ScooterManager {
             for (Reward reward : this.rewards) {
                 Position rewardPosition = reward.getInitialPosition(); // inicial ou final ?
                 if (rewardPosition.inRadius(p, D)) {
-                    rewards.add(rewardPosition.clone());
+                    List<Position> rewardPair = new ArrayList<>();
+                    rewardPair.add(0, rewardPosition);
+                    rewardPair.add(1, reward.getFinalPosition());
+                    rewards.add(rewardPair);
                 }
             }
 
@@ -268,6 +271,9 @@ public class ScooterManager {
 
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
+            this.lockRewards.lock();
+            this.rewardsCond.signal();
+            this.lockRewards.unlock();
             this.reservations.put(r.getReservationID(), r);
 
             return r; // clone???
