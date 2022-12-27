@@ -20,7 +20,7 @@ public class RunClient {
     }
 
     private static void showMenu(Scanner sc, Client c) throws IOException, InterruptedException {
-        int codReservation = 0;
+        int codReservation = -1;
         while (true){
             System.out.println("============");
             System.out.println("3... Show available scooters");
@@ -137,11 +137,18 @@ public class RunClient {
         System.out.println("y: ");
         int y = sc.nextInt();
 
-        Reservation r = c.activateScooter(new Position(x, y));
+        Position p = new Position(x, y);
+        Reservation r = c.activateScooter(p);
+        if (r != null){
+            System.out.println("Scooter na posição: " + r.getInitialPosition().toString());
+            System.out.println("Reservation ID: " + r.getReservationID());
+            return r.getReservationID();
+        }
+        else{
+            System.out.println("Não há scooters disponíveis perto de " + p.toString());
+            return -1;
+        }
 
-        System.out.println("Scooter na posição: " + r.getInitialPosition().toString());
-        System.out.println("Reservation ID: " + r.getReservationID());
-        return r.getReservationID();
     }
 
     private static void parkScooterMenu(Scanner sc, Client c, int codReservation) throws IOException, InterruptedException {

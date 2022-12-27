@@ -19,7 +19,7 @@ class ServerWorker implements Runnable{
 
     public ServerWorker(TaggedConnection connection, ScooterManager scooterManager){
         this.connection = connection;
-        this.scooterManager = new ScooterManager();
+        this.scooterManager = scooterManager;
         this.clientUsername = null;
     }
 
@@ -112,18 +112,18 @@ class ServerWorker implements Runnable{
                     try {
                         Reservation reservation = this.scooterManager.activateScooter(p, this.clientUsername);
 
-                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(13); // (x) 4 bytes + (y) 4 bytes + (reservation_id) 4 bytes + (bool) 1 byte
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(12); // (x) 4 bytes + (y) 4 bytes + (reservation_id) 4 bytes
                         DataOutputStream os = new DataOutputStream(byteStream);
-                        os.writeBoolean(true);
-                        os.write(reservation.getInitialPosition().serialize());
                         os.writeInt(reservation.getReservationID());
+                        os.write(reservation.getInitialPosition().serialize());
+
 
                         this.connection.send(5, byteStream.toByteArray());
                     }
-                    catch (NoScootersAvailableException e){
-                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
+                    catch (Exception e){
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);
                         DataOutputStream os = new DataOutputStream(byteStream);
-                        os.writeBoolean(false); // Something went wrong
+                        os.writeInt(-1); // Something went wrong
 
                         this.connection.send(5, byteStream.toByteArray());
                     }
@@ -173,7 +173,7 @@ class ServerWorker implements Runnable{
                 }
             }
         }
-        catch (Exception ignored){
+        catch (IOException ignored){
             //mudar
         }
 

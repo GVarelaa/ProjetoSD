@@ -258,6 +258,7 @@ public class ScooterManager {
             }
 
             if (nearScooter == null) {
+                nearScooter.lockScooter.unlock();
                 throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
             }
 

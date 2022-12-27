@@ -164,7 +164,7 @@ public class Client {
     public Reservation activateScooter(Position p) throws IOException, InterruptedException {
         //Thread activateScooter = new Thread(() -> {
             try{
-                int size = 8 + 2;;// + username.length(); // (x)4 + (y)4 bytes + (username_size)2 bytes + username
+                int size = 8;;// + username.length(); // (x)4 + (y)4 bytes
                 ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
                 DataOutputStream os = new DataOutputStream(byteArray);
                 os.writeInt(p.getX());
@@ -178,13 +178,16 @@ public class Client {
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
 
                 Reservation reservation = null;
-                boolean returnCode = is.readBoolean();
+                int returnCode = is.readInt();
 
-                if (returnCode) {
+                if (returnCode >= 0) {
                     int x = is.readInt();
                     int y = is.readInt();
                     int codReservation = is.readInt();
                     reservation = new Reservation(codReservation, new Position(x, y)) ;
+                }
+                else {
+                    return null;
                 }
 
                 return reservation;
