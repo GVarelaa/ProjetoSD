@@ -234,25 +234,25 @@ public class ScooterManager {
      */
     public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
         Scooter nearScooter = null;
+        System.out.println("Thread " + Thread.currentThread().getName() + " started activating scooter at position " + p.toString());
 
         //this.lockScooters.lock();
 
         try{
             for (Scooter scooter: this.scooters) { // Iterate over scooters set
                 scooter.lockScooter.lock();
-
-                if (scooter.getIsFree()) {
-                    Position scooterPosition = scooter.getPosition();
-
-                    if (scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
-                        if (nearScooter == null) nearScooter = scooter;
-
+                Position scooterPosition = scooter.getPosition();
+                if (scooter.getIsFree() && scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
+                    if (nearScooter == null) {
+                        nearScooter = scooter;
+                    }
+                    else {
                         if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
                             nearScooter.lockScooter.unlock();
                             nearScooter = scooter;
                         }
+                        else scooter.lockScooter.unlock();
                     }
-                    else scooter.lockScooter.unlock();
                 }
                 else scooter.lockScooter.unlock(); // ir libertando à medida
             }
@@ -269,7 +269,6 @@ public class ScooterManager {
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
             this.reservations.put(r.getReservationID(), r);
-            System.out.println(this.reservationID);
 
             return r; // clone???
         }
