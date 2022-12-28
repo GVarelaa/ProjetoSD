@@ -57,7 +57,7 @@ public class ScooterManager {
         new Thread(() -> this.generateRewards()).start();
 
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -75,6 +75,7 @@ public class ScooterManager {
 
             User newUser = new User(username, password);
             this.users.put(username, newUser);
+            System.out.println(this.users.size());
         }
         finally {
             this.usersWriteLock.unlock();
@@ -227,15 +228,17 @@ public class ScooterManager {
             nearScooter.setIsFree(false);
 
             this.reservationsLock.lock();
+            nearScooter.lockScooter.unlock();
 
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
 
             this.rewardsLock.lock();
-            nearScooter.lockScooter.unlock();
             this.rewardsCond.signal();
             this.rewardsLock.unlock();
+
             this.reservations.put(r.getReservationID(), r);
+            System.out.println(this.reservations.size());
 
             return r; // clone???
         }
