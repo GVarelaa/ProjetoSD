@@ -53,6 +53,16 @@ public class ScooterManager {
         new Thread(() -> {
             this.generateRewards();
         }).start();
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        for(Reward r: this.rewards){
+            System.out.println(r.toString());
+        }
     }
 
     public void register(String username, String password) throws UsernameAlreadyExistsException {
