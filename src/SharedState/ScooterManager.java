@@ -275,24 +275,34 @@ public class ScooterManager {
      */
     public double parkScooter(int reservationID, Position parkingPosition){
         Scooter scooter = null;
+        Reservation reservation = null;
         LocalDateTime parkTimestamp = LocalDateTime.now();
-        try{
-            this.reservationsLock.lock();
-            Thread.sleep(1);
 
-            Reservation reservation = this.reservations.get(reservationID); // lançar exceção se for null
+        try {
+            this.reservationsLock.lock();
+
+            reservation = this.reservations.get(reservationID); // lançar exceção se for null
             this.reservations.remove(reservationID); // removemos do mapa?
 
             this.rewardsLock.lock();
+        }
+        finally {
             this.reservationsLock.unlock();
+        }
 
+        try {
             this.reservationID = reservation.getReservationID(); // para a condição
 
             scooter = reservation.getScooter();
-            scooter.lockScooter.lock();
-            scooter.setPosition(parkingPosition);
-            scooter.setIsFree(true);
-            scooter.lockScooter.unlock();
+
+            try {
+                scooter.lockScooter.lock();
+                scooter.setPosition(parkingPosition);
+                scooter.setIsFree(true);
+            }
+            finally {
+                scooter.lockScooter.unlock();
+            }
 
             Position initialPosition = reservation.getInitialPosition();
             double distance = initialPosition.distanceTo(parkingPosition);
@@ -307,13 +317,11 @@ public class ScooterManager {
             }
 
             this.rewardsCond.signal(); // acordar a thread
-            this.rewardsLock.unlock();
 
             return cost;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-
+        }
+        finally {
+            this.rewardsLock.unlock();
         }
     }
 
@@ -337,12 +345,16 @@ public class ScooterManager {
                 List<Position> positions = new ArrayList<>();
                 List<Scooter> toUnlock = new ArrayList<>();
                 for(Scooter s : this.scooters){
-                    s.lockScooter.lock();
-                    if(s.getIsFree()){
-                        toUnlock.add(s);
-                        positions.add(s.getPosition());
+                    try {
+                        s.lockScooter.lock();
+                        if (s.getIsFree()) {
+                            toUnlock.add(s);
+                            positions.add(s.getPosition());
+                        }
                     }
-                    else s.lockScooter.unlock();
+                    finally {
+                        s.lockScooter.unlock();
+                    }
                 }
 
                 this.rewards.clear(); // Apagar as rewards que lá estavam
