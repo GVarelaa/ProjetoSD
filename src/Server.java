@@ -158,10 +158,18 @@ class ServerWorker implements Runnable{
                         int x = is.readInt();
                         int y = is.readInt();
                         Position p = new Position(x, y);
+
                         List<Reward> rewards;
 
-                        //while(true){ // Notificações ligadas
-                            rewards = this.scooterManager.userNotifications(this.clientUsername, p);
+
+                        while(true){ // Notificações ligadas
+                            //System.out.println("aqui");
+                            try{
+                                rewards = this.scooterManager.userNotifications(this.clientUsername, p);
+                            }
+                            catch (NotificationsDisabledException e){
+                                break;
+                            }
 
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);
@@ -172,7 +180,7 @@ class ServerWorker implements Runnable{
                             }
 
                             this.connection.send(7, byteStream.toByteArray());
-                        //}
+                        }
                     }
                 }
             }
@@ -185,7 +193,7 @@ class ServerWorker implements Runnable{
 }
 
 public class Server {
-    final static int WORKERS_PER_CONNECTION = 3;
+    final static int WORKERS_PER_CONNECTION = 50;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
         ScooterManager scooterManager = new ScooterManager();
