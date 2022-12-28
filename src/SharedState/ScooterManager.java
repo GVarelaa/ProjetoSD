@@ -48,25 +48,21 @@ public class ScooterManager {
         this.reservationsLock = new ReentrantLock();
 
         this.rewardsCond = this.rewardsLock.newCondition();
-        this.notificationsCond = this.reservationsLock.newCondition();
+        this.notificationsCond = this.rewardsLock.newCondition();
 
         this.reservationID = -1;
 
         this.randomizeScooterPositions();
 
-        new Thread(() -> {
-            this.generateRewards();
-        }).start();
+        new Thread(() -> this.generateRewards()).start();
 
         try {
-            Thread.sleep(100);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        for(Reward r: this.rewards){
-            System.out.println(r.toString());
-        }
+        for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
     }
 
     public void register(String username, String password) throws UsernameAlreadyExistsException {
@@ -207,7 +203,6 @@ public class ScooterManager {
 
         try{
             for (Scooter scooter: this.scooters) { // Iterate over scooters set
-                System.out.println("Lock1");
                 scooter.lockScooter.lock();
                 Position scooterPosition = scooter.getPosition();
                 if (scooter.getIsFree() && scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
@@ -231,13 +226,11 @@ public class ScooterManager {
 
             nearScooter.setIsFree(false);
 
-            System.out.println("Lock2");
             this.reservationsLock.lock();
 
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
 
-            System.out.println("Lock3");
             this.rewardsLock.lock();
             nearScooter.lockScooter.unlock();
             this.rewardsCond.signal();
@@ -328,12 +321,12 @@ public class ScooterManager {
     public void generateRewards(){
         // Percorrer as trotis para tirar as posições das livres
         // Para trotis em posições iguais, gerar recompensas
-        int lastReservationID = -1;
+        int lastReservationID = -2;
         while(true){ // Quando for estacionada
             try{
                 this.rewardsLock.lock();
 
-                while(this.reservationID == lastReservationID){
+                while(this.reservationID == lastReservationID){ // igualar a -1 para calcular recompensas quando arranca
                     try{
                         this.rewardsCond.await();
                     }
@@ -345,16 +338,12 @@ public class ScooterManager {
                 List<Position> positions = new ArrayList<>();
                 List<Scooter> toUnlock = new ArrayList<>();
                 for(Scooter s : this.scooters){
-                    try {
-                        s.lockScooter.lock();
-                        if (s.getIsFree()) {
-                            toUnlock.add(s);
-                            positions.add(s.getPosition());
-                        }
+                    s.lockScooter.lock();
+                    if (s.getIsFree()) {
+                        toUnlock.add(s);
+                        positions.add(s.getPosition());
                     }
-                    finally {
-                        s.lockScooter.unlock();
-                    }
+                    else s.lockScooter.unlock();
                 }
 
                 this.rewards.clear(); // Apagar as rewards que lá estavam
@@ -384,6 +373,7 @@ public class ScooterManager {
                     s.lockScooter.unlock();
                 }
 
+                if (lastReservationID == -2) lastReservationID = -1; // Para executar uma primeira vez quando inicia
                 lastReservationID = this.reservationID;
             }
             finally {
