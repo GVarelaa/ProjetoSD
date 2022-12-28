@@ -207,6 +207,7 @@ public class ScooterManager {
 
         try{
             for (Scooter scooter: this.scooters) { // Iterate over scooters set
+                System.out.println("Lock1");
                 scooter.lockScooter.lock();
                 Position scooterPosition = scooter.getPosition();
                 if (scooter.getIsFree() && scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
@@ -215,8 +216,8 @@ public class ScooterManager {
                     }
                     else {
                         if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
-                            nearScooter = scooter;
                             nearScooter.lockScooter.unlock();
+                            nearScooter = scooter;
                         }
                         else scooter.lockScooter.unlock();
                     }
@@ -230,11 +231,13 @@ public class ScooterManager {
 
             nearScooter.setIsFree(false);
 
+            System.out.println("Lock2");
             this.reservationsLock.lock();
 
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
 
+            System.out.println("Lock3");
             this.rewardsLock.lock();
             nearScooter.lockScooter.unlock();
             this.rewardsCond.signal();
@@ -275,7 +278,7 @@ public class ScooterManager {
         LocalDateTime parkTimestamp = LocalDateTime.now();
         try{
             this.reservationsLock.lock();
-            Thread.sleep(10000);
+            Thread.sleep(1);
 
             Reservation reservation = this.reservations.get(reservationID); // lançar exceção se for null
             this.reservations.remove(reservationID); // removemos do mapa?
