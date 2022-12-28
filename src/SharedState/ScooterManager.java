@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManager {
     private final static int D = 2;
@@ -18,7 +19,9 @@ public class ScooterManager {
     private final static int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
     private Map<String, User> users;
-    private ReentrantLock lockUsers;
+    private ReentrantReadWriteLock usersLock;
+    private ReentrantReadWriteLock.ReadLock usersReadLock;
+    private ReentrantReadWriteLock.WriteLock usersWriteLock;
     private Map<Integer, Reservation> reservations;
     private ReentrantLock lockReservations;
     private List<Reward> rewards;
@@ -34,7 +37,9 @@ public class ScooterManager {
     public ScooterManager(){
         this.scooters = new Scooter[S];
         this.users = new HashMap<>();
-        this.lockUsers = new ReentrantLock();
+        this.usersLock = new ReentrantReadWriteLock();
+        this.usersReadLock = usersLock.readLock();
+        this.usersWriteLock = usersLock.writeLock();
         this.rewards = new ArrayList<>();
         this.lockRewards = new ReentrantLock();
         this.reservations = new HashMap<>();
@@ -62,10 +67,10 @@ public class ScooterManager {
     }
 
     public void register(String username, String password) throws UsernameAlreadyExistsException {
-        try{
-            this.lockUsers.lock();
+        try {
+            this.usersWriteLock.lock();
 
-            if(this.users.containsKey(username)){
+            if (this.users.containsKey(username)) {
                 throw new UsernameAlreadyExistsException("Username " + username + " already exists!");
             }
 
@@ -73,15 +78,15 @@ public class ScooterManager {
             this.users.put(username, newUser);
         }
         finally {
-            this.lockUsers.unlock();
+            this.usersWriteLock.unlock();
         }
     }
 
     public boolean login(String username, String password) throws NonExistentUsernameException {
-        try{
-            this.lockUsers.lock();
+        try {
+            this.usersReadLock.lock();
 
-            if(!this.users.containsKey(username)){
+            if (!this.users.containsKey(username)) {
                 throw new NonExistentUsernameException("Username " + username + " doesn't exist!");
             }
 
@@ -90,7 +95,7 @@ public class ScooterManager {
             return user.getUsername().equals(username) && user.getPassword().equals(password);
         }
         finally {
-            this.lockUsers.unlock();
+            this.usersReadLock.unlock();
         }
     }
 
@@ -98,14 +103,14 @@ public class ScooterManager {
         User user = null;
 
         try {
-            this.lockUsers.lock();
+            this.usersReadLock.lock();
 
             user = this.users.get(username);
 
             user.lock.lock();
         }
         finally {
-            this.lockUsers.unlock();
+            this.usersReadLock.unlock();
         }
 
         try {
@@ -408,14 +413,14 @@ public class ScooterManager {
 
                     //verificar se as notificações estão desativadas
                     try {
-                        this.lockUsers.lock();
+                        this.usersReadLock.lock();
 
                         u = this.users.get(username);
 
                         u.lock.lock();
                     }
                     finally {
-                        this.lockUsers.unlock();
+                        this.usersReadLock.unlock();
                     }
                     try {
                         if (!u.getNotificationsState()) {
