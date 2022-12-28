@@ -18,13 +18,12 @@ public class ScooterManager {
     private final static int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
     private Map<String, User> users;
-    private ReentrantReadWriteLock usersLock;
     private ReentrantReadWriteLock.ReadLock usersReadLock;
     private ReentrantReadWriteLock.WriteLock usersWriteLock;
     private Map<Integer, Reservation> reservations;
-    private ReentrantLock lockReservations;
+    private ReentrantLock reservationsLock;
     private List<Reward> rewards;
-    public ReentrantLock lockRewards;
+    public ReentrantLock rewardsLock;
     private Condition rewardsCond;
     public Condition notificationsCond;
     private int reservationID; // Para a condição da variável de condição
@@ -35,16 +34,20 @@ public class ScooterManager {
      */
     public ScooterManager(){
         this.scooters = new Scooter[S];
+
         this.users = new HashMap<>();
-        this.usersLock = new ReentrantReadWriteLock();
+        ReentrantReadWriteLock usersLock = new ReentrantReadWriteLock();
         this.usersReadLock = usersLock.readLock();
         this.usersWriteLock = usersLock.writeLock();
+
         this.rewards = new ArrayList<>();
-        this.lockRewards = new ReentrantLock();
+        this.rewardsLock = new ReentrantLock();
+
         this.reservations = new HashMap<>();
-        this.lockReservations = new ReentrantLock();
-        this.rewardsCond = this.lockRewards.newCondition();
-        this.notificationsCond = this.lockReservations.newCondition();
+        this.reservationsLock = new ReentrantLock();
+
+        this.rewardsCond = this.rewardsLock.newCondition();
+        this.notificationsCond = this.reservationsLock.newCondition();
 
         this.reservationID = -1;
 
@@ -161,7 +164,7 @@ public class ScooterManager {
         List<List<Position>> rewards = new ArrayList<>();
 
         try {
-            this.lockRewards.lock();
+            this.rewardsLock.lock();
 
             for (Reward reward : this.rewards) {
                 Position rewardPosition = reward.getInitialPosition(); // inicial ou final ?
@@ -176,7 +179,7 @@ public class ScooterManager {
             return rewards;
         }
       finally {
-            this.lockRewards.unlock();
+            this.rewardsLock.unlock();
         }
     }
 
@@ -191,8 +194,6 @@ public class ScooterManager {
         Scooter nearScooter = null;
         System.out.println("Thread " + Thread.currentThread().getName() + " started activating scooter at position " + p.toString());
 
-        //this.lockScooters.lock();
-
         try{
             for (Scooter scooter: this.scooters) { // Iterate over scooters set
                 scooter.lockScooter.lock();
@@ -203,8 +204,8 @@ public class ScooterManager {
                     }
                     else {
                         if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
-                            nearScooter.lockScooter.unlock();
                             nearScooter = scooter;
+                            nearScooter.lockScooter.unlock();
                         }
                         else scooter.lockScooter.unlock();
                     }
@@ -218,20 +219,21 @@ public class ScooterManager {
 
             nearScooter.setIsFree(false);
 
-            this.lockReservations.lock();
-            nearScooter.lockScooter.unlock();
+            this.reservationsLock.lock();
 
             Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
-            this.lockRewards.lock();
+
+            this.rewardsLock.lock();
+            nearScooter.lockScooter.unlock();
             this.rewardsCond.signal();
-            this.lockRewards.unlock();
+            this.rewardsLock.unlock();
             this.reservations.put(r.getReservationID(), r);
 
             return r; // clone???
         }
         finally {
-            this.lockReservations.unlock();
+            this.reservationsLock.unlock();
         }
     }
 
@@ -261,21 +263,27 @@ public class ScooterManager {
         Scooter scooter = null;
         LocalDateTime parkTimestamp = LocalDateTime.now();
         try{
-            this.lockReservations.lock();
+            this.reservationsLock.lock();
             Thread.sleep(10000);
 
             Reservation reservation = this.reservations.get(reservationID); // lançar exceção se for null
             this.reservations.remove(reservationID); // removemos do mapa?
 
-            scooter = reservation.getScooter();
+            this.rewardsLock.lock();
+            this.reservationsLock.unlock();
+
             this.reservationID = reservation.getReservationID(); // para a condição
+
+            scooter = reservation.getScooter();
+            scooter.lockScooter.lock();
+            scooter.setPosition(parkingPosition);
+            scooter.setIsFree(true);
+            scooter.lockScooter.unlock();
 
             Position initialPosition = reservation.getInitialPosition();
             double distance = initialPosition.distanceTo(parkingPosition);
             double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
             double cost = ScooterManager.calculateCost(distance, duration);
-
-            this.lockRewards.lock();
 
             for(Reward r: this.rewards){ // Verificar se é uma recompensa
                 if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){
@@ -284,21 +292,14 @@ public class ScooterManager {
                 }
             }
 
-            scooter.lockScooter.lock();
-            this.lockReservations.unlock();
-
-            scooter.setPosition(parkingPosition);
-            scooter.setIsFree(true);
-
             this.rewardsCond.signal(); // acordar a thread
-            this.lockRewards.unlock();
+            this.rewardsLock.unlock();
 
             return cost;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
 
-            scooter.lockScooter.unlock();
         }
     }
 
@@ -308,7 +309,7 @@ public class ScooterManager {
         int lastReservationID = -1;
         while(true){ // Quando for estacionada
             try{
-                this.lockRewards.lock();
+                this.rewardsLock.lock();
 
                 while(this.reservationID == lastReservationID){
                     try{
@@ -319,8 +320,8 @@ public class ScooterManager {
                     }
                 }
 
-                List<Position> positions = new ArrayList<Position>();
-                List<Scooter> toUnlock = new ArrayList<Scooter>();
+                List<Position> positions = new ArrayList<>();
+                List<Scooter> toUnlock = new ArrayList<>();
                 for(Scooter s : this.scooters){
                     s.lockScooter.lock();
                     if(s.getIsFree()){
@@ -360,7 +361,7 @@ public class ScooterManager {
                 lastReservationID = this.reservationID;
             }
             finally {
-                this.lockRewards.unlock();
+                this.rewardsLock.unlock();
             }
         }
     }
@@ -391,7 +392,7 @@ public class ScooterManager {
      */
     public List<Reward> userNotifications(String username, Position p){
         try{
-            this.lockRewards.lock();
+            this.rewardsLock.lock();
 
             List<Reward> rewards = null;
 
@@ -430,7 +431,7 @@ public class ScooterManager {
             return rewards;
         }
         finally {
-            this.lockRewards.unlock();
+            this.rewardsLock.unlock();
         }
     }
 }
