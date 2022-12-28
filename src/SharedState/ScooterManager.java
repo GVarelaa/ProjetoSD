@@ -5,6 +5,7 @@ import Exceptions.NonExistentUsernameException;
 import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
 
+import java.security.spec.PSSParameterSpec;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -56,6 +57,16 @@ public class ScooterManager {
         new Thread(() -> {
             this.generateRewards();
         }).start();
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        for(Reward r: this.rewards){
+            System.out.println(r.toString());
+        }
     }
 
     public void register(String username, String password) throws UsernameAlreadyExistsException {
@@ -391,10 +402,9 @@ public class ScooterManager {
      * @return List of rewards on the radius of a given position
      */
     public List<Reward> userNotifications(String username, Position p){
+        List<Reward> rewards = null;
         try{
             this.rewardsLock.lock();
-
-            List<Reward> rewards = null;
 
             while((rewards = this.getRewardsFromPosition(p)) == null){ // Condição : enquanto não houver recompensas no seu raio, adormece
                 User u = null;
@@ -427,7 +437,6 @@ public class ScooterManager {
 
                 }
             }
-
             return rewards;
         }
         finally {

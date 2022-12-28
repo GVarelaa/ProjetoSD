@@ -160,19 +160,19 @@ class ServerWorker implements Runnable{
                         Position p = new Position(x, y);
                         List<Reward> rewards;
 
-                        while(true){
+                        //while(true){ // Notificações ligadas
                             rewards = this.scooterManager.userNotifications(this.clientUsername, p);
-
 
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);
                             os.writeInt(rewards.size());
 
-                            this.connection.send(7, byteStream.toByteArray()); // Comprimento da lista de recompensas
                             for(Reward r : rewards){
-                                this.connection.send(7, r.serialize());
+                                os.write(r.serialize());
                             }
-                        }
+
+                            this.connection.send(7, byteStream.toByteArray());
+                        //}
                     }
                 }
             }

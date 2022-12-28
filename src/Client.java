@@ -276,6 +276,7 @@ public class Client {
                     rewards.add(r);
                 }
 
+                System.out.println("Novas notificações recebidas ....");
                 for(int i=0; i<length; i++){
                     System.out.println(rewards.get(i).toString());
                 }
