@@ -5,6 +5,7 @@ import Exceptions.NonExistentUsernameException;
 import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
 
+import java.security.spec.PSSParameterSpec;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -395,10 +396,9 @@ public class ScooterManager {
      * @return List of rewards on the radius of a given position
      */
     public List<Reward> userNotifications(String username, Position p){
+        List<Reward> rewards = null;
         try{
             this.lockRewards.lock();
-
-            List<Reward> rewards = null;
 
             while((rewards = this.getRewardsFromPosition(p)) == null){ // Condição : enquanto não houver recompensas no seu raio, adormece
                 User u = null;
@@ -417,7 +417,6 @@ public class ScooterManager {
                     finally {
                         this.lockUsers.unlock();
                     }
-
                     try {
                         if (!u.getNotificationsState()) {
                             throw new NotificationsDisabledException("Notifications are disabled!");
@@ -431,10 +430,8 @@ public class ScooterManager {
 
                 }
             }
-
             return rewards;
-        }
-        finally {
+        } finally {
             this.lockRewards.unlock();
         }
     }
