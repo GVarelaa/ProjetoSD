@@ -406,17 +406,33 @@ public class ScooterManager {
     }
 
     /**
+     * Calculates the elements that are in the first list but aren't in the second one
+     * @param newRewards newly generated rewards
+     * @param oldRewards old rewards (calculated before)
+     * @return the difference between the two lists
+     */
+    private List<Reward> getDiff(List<Reward> newRewards, List<Reward> oldRewards){
+        List<Reward> diff = new ArrayList<>();
+        for (Reward r: newRewards){
+            if (!oldRewards.contains(r)){
+                diff.add(r);
+            }
+        }
+        return diff;
+    }
+
+    /**
      * Check if there are rewards on the radius of a given position and waits if there are no rewards
      * @param p Position
-     * @return List of rewards on the radius of a given position
+     * @return List of new rewards on the radius of a given position
      */
-    public List<Reward> userNotifications(String username, Position p) throws NotificationsDisabledException{
+    public List<Reward> userNotifications(String username, Position p, List<Reward> oldRewards) throws NotificationsDisabledException{
         System.out.println(username);
-        List<Reward> rewards = null;
+        List<Reward> diff;
         try{
             this.rewardsLock.lock();
 
-            while((rewards = this.getRewardsFromPosition(p)) == null){ // Condição : enquanto não houver recompensas no seu raio, adormece
+            while((diff = this.getDiff(this.getRewardsFromPosition(p), oldRewards)).size() == 0){ // Condição : enquanto não houver recompensas no seu raio, adormece
                 User u = null;
 
                 try{
@@ -447,7 +463,11 @@ public class ScooterManager {
 
                 }
             }
-            return rewards;
+            for(Reward r: diff){
+                oldRewards.add(r);
+            }
+
+            return diff;
         }
         finally {
             this.rewardsLock.unlock();

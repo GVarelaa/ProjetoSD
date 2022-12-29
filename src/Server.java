@@ -160,21 +160,12 @@ class ServerWorker implements Runnable{
                         Position p = new Position(x, y);
 
                         List<Reward> rewards = new ArrayList<>();
-                        List<Reward> rewardsAux;
                         List<Reward> newRewards;
 
 
                         while(true){ // Notificações ligadas
-                            Thread.sleep(1000);
-                            newRewards = new ArrayList<>();
                             try{
-                                rewardsAux = this.scooterManager.userNotifications(this.clientUsername, p);
-                                for(Reward r: rewardsAux){
-                                    if (!rewards.contains(r)){
-                                        rewards.add(r);
-                                        newRewards.add(r);
-                                    }
-                                }
+                                newRewards = this.scooterManager.userNotifications(this.clientUsername, p, rewards);
                             }
                             catch (NotificationsDisabledException e){
                                 break;
@@ -200,8 +191,6 @@ class ServerWorker implements Runnable{
         }
         catch (IOException ignored){
             //mudar
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
 
     }
