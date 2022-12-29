@@ -72,6 +72,7 @@ public class RunClient {
 
         boolean success = c.register(username, password);
         if (success == true){
+            c.login(username, password);
             System.out.println("Registo efetuado com sucesso!");
         }
         else {
@@ -101,16 +102,25 @@ public class RunClient {
 
     private static void loginMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         boolean registered = false;
-
-        while (!registered){
-            registered = signUpMenu(sc, c);
-        }
-
         boolean loggedIn = false;
 
-        while (!loggedIn){
-            loggedIn = signInMenu(sc, c);
+        while (!registered && !loggedIn){
+            System.out.println("============");
+            System.out.println("1... Registar");
+            System.out.println("2... Autenticar");
+            System.out.println("============");
+
+            int opt = sc.nextInt();
+
+            if (opt == 1){
+                registered = signUpMenu(sc, c);
+            }
+
+            if (opt == 2){
+                loggedIn = signInMenu(sc, c);
+            }
         }
+
     }
 
     private static void showScootersMenu(Scanner sc, Client c) throws IOException, InterruptedException {
