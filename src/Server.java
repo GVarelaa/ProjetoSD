@@ -159,13 +159,22 @@ class ServerWorker implements Runnable{
                         int y = is.readInt();
                         Position p = new Position(x, y);
 
-                        List<Reward> rewards;
+                        List<Reward> rewards = new ArrayList<>();
+                        List<Reward> rewardsAux;
+                        List<Reward> newRewards;
 
 
                         while(true){ // Notificações ligadas
-                            //System.out.println("aqui");
+                            Thread.sleep(1000);
+                            newRewards = new ArrayList<>();
                             try{
-                                rewards = this.scooterManager.userNotifications(this.clientUsername, p);
+                                rewardsAux = this.scooterManager.userNotifications(this.clientUsername, p);
+                                for(Reward r: rewardsAux){
+                                    if (!rewards.contains(r)){
+                                        rewards.add(r);
+                                        newRewards.add(r);
+                                    }
+                                }
                             }
                             catch (NotificationsDisabledException e){
                                 break;
@@ -173,13 +182,17 @@ class ServerWorker implements Runnable{
 
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);
-                            os.writeInt(rewards.size());
+                            int numRewards = newRewards.size();
 
-                            for(Reward r : rewards){
-                                os.write(r.serialize());
+                            if (numRewards > 0) {
+                                os.writeInt(numRewards);
+
+                                for (Reward r : newRewards) {
+                                    os.write(r.serialize());
+                                }
+
+                                this.connection.send(7, byteStream.toByteArray());
                             }
-
-                            this.connection.send(7, byteStream.toByteArray());
                         }
                     }
                 }
@@ -187,6 +200,8 @@ class ServerWorker implements Runnable{
         }
         catch (IOException ignored){
             //mudar
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
     }
