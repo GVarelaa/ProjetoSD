@@ -2,6 +2,7 @@ package SharedState;
 
 import Exceptions.NoScootersAvailableException;
 import Exceptions.NonExistentUsernameException;
+import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public interface IScooterManager {
      * @param p center of radius where rewards will be checked
      * @return a list of the positions of the rewards available
      */
-    List<Position> listRewards(Position p);
+    List<List<Position>> listRewards(Position p);
 
     /**
      * Tries to activate a scooter the closest to a given position, limited by a radius D (pre-configured)
@@ -61,7 +62,7 @@ public interface IScooterManager {
      * @param p Position
      * @return List of rewards on the radius of a given position
      */
-    List<Reward> userNotifications(Position p);
+    List<Reward> userNotifications(String username, Position p, List<Reward> oldRewards) throws NotificationsDisabledException;
 
     /**
      * Changes the notifications state on a user
