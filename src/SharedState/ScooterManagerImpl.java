@@ -5,7 +5,6 @@ import Exceptions.NonExistentUsernameException;
 import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
 
-import java.security.spec.PSSParameterSpec;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -13,7 +12,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ScooterManager {
+public class ScooterManagerImpl implements IScooterManager{
     private final static int D = 2;
     private final static int N = 10; // dimensão do mapa
     private final static int S = 15; // número de scooters fixo,
@@ -33,7 +32,7 @@ public class ScooterManager {
     /**
      * Instantiates scooters map and collection lock
      */
-    public ScooterManager(){
+    public ScooterManagerImpl(){
         this.scooters = new Scooter[S];
 
         this.users = new HashMap<>();
@@ -322,7 +321,7 @@ public class ScooterManager {
             Position initialPosition = reservation.getInitialPosition();
             double distance = initialPosition.distanceTo(parkingPosition);
             double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
-            double cost = ScooterManager.calculateCost(distance, duration);
+            double cost = ScooterManagerImpl.calculateCost(distance, duration);
 
             for(Reward r: this.rewards){ // Verificar se é uma recompensa
                 if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){

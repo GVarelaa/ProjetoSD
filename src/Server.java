@@ -14,7 +14,7 @@ import java.util.List;
 
 class ServerWorker implements Runnable{
     private TaggedConnection connection;
-    private ScooterManager scooterManager;
+    private IScooterManager scooterManager;
     private String clientUsername; //username do cliente - lock?
 
     /**
@@ -22,7 +22,7 @@ class ServerWorker implements Runnable{
      * @param connection TaggedConenction
      * @param scooterManager ScooterManger
      */
-    public ServerWorker(TaggedConnection connection, ScooterManager scooterManager){
+    public ServerWorker(TaggedConnection connection, IScooterManager scooterManager){
         this.connection = connection;
         this.scooterManager = scooterManager;
         this.clientUsername = null;
@@ -205,7 +205,7 @@ public class Server {
     final static int WORKERS_PER_CONNECTION = 50;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        ScooterManager scooterManager = new ScooterManager();
+        IScooterManager scooterManager = new ScooterManagerImpl();
 
         while(true){
             Socket socket = serverSocket.accept();
