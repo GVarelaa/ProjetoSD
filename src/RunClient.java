@@ -7,6 +7,13 @@ import java.util.List;
 import java.util.Scanner;
 
 public class RunClient {
+
+    /**
+     * Client's Main
+     * @param args System's args
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         Client client = new Client();
         client.start();
@@ -19,6 +26,13 @@ public class RunClient {
         client.close();
     }
 
+    /**
+     * Show main's menu
+     * @param sc scanner
+     * @param c client
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static void showMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         int codReservation = -1;
         while (true){
@@ -61,6 +75,14 @@ public class RunClient {
         }
     }
 
+    /**
+     * Sign up Menu
+     * @param sc scanner
+     * @param c client
+     * @return response
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static boolean signUpMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         System.out.println("============");
         System.out.println("Registar utilizador");
@@ -81,6 +103,14 @@ public class RunClient {
         return success;
     }
 
+    /**
+     * Sign in Menu
+     * @param sc scanner
+     * @param c client
+     * @return response
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static boolean signInMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         System.out.println("============");
         System.out.println("Autenticar utilizador");
@@ -100,6 +130,13 @@ public class RunClient {
         return success;
     }
 
+    /**
+     * Login Menu
+     * @param sc scanner
+     * @param c client
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static void loginMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         boolean registered = false;
         boolean loggedIn = false;
@@ -123,6 +160,13 @@ public class RunClient {
 
     }
 
+    /**
+     * Show Scooter Menu
+     * @param sc scanner
+     * @param c client
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static void showScootersMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
@@ -140,6 +184,14 @@ public class RunClient {
         }
     }
 
+    /**
+     * Show activation Scooter menu
+     * @param sc scanner
+     * @param c client
+     * @return response
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static int activateScooterMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
@@ -161,6 +213,14 @@ public class RunClient {
 
     }
 
+    /**
+     * Show park scooter menu
+     * @param sc scanner
+     * @param c client
+     * @param codReservation code Reservation
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static void parkScooterMenu(Scanner sc, Client c, int codReservation) throws IOException, InterruptedException {
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
@@ -178,6 +238,11 @@ public class RunClient {
         }
     }
 
+    /**
+     * Show Turn on notifications' menu
+     * @param sc scanner
+     * @param c client
+     */
     private static void turnOnNotificationsMenu(Scanner sc, Client c){
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
@@ -192,6 +257,13 @@ public class RunClient {
         t.start();
     }
 
+    /**
+     * Show Rewards' menu
+     * @param sc scanner
+     * @param c client
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     private static void showRewardsMenu(Scanner sc, Client c) throws IOException, InterruptedException {
         System.out.println("Indique a posição");
         System.out.println("x: ");

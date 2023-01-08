@@ -65,6 +65,12 @@ public class ScooterManager {
         for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
     }
 
+    /**
+     * Registers an user
+     * @param username user's name
+     * @param password user's password
+     * @throws UsernameAlreadyExistsException Exception
+     */
     public void register(String username, String password) throws UsernameAlreadyExistsException {
         try {
             this.usersWriteLock.lock();
@@ -82,6 +88,13 @@ public class ScooterManager {
         }
     }
 
+    /**
+     * Login in the app
+     * @param username user's name
+     * @param password user's password
+     * @return returns user
+     * @throws NonExistentUsernameException Exception
+     */
     public boolean login(String username, String password) throws NonExistentUsernameException {
         try {
             this.usersReadLock.lock();
@@ -99,6 +112,11 @@ public class ScooterManager {
         }
     }
 
+    /**
+     * Changes the notifications state of an user
+     * @param username user's name
+     * @param notificationsState state
+     */
     public void changeNotificationsState(String username, boolean notificationsState) {
         User user = null;
 
@@ -322,6 +340,9 @@ public class ScooterManager {
         }
     }
 
+    /**
+     * Generates all the rewards
+     */
     public void generateRewards(){
         // Percorrer as trotis para tirar as posições das livres
         // Para trotis em posições iguais, gerar recompensas

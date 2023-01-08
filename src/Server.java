@@ -17,6 +17,11 @@ class ServerWorker implements Runnable{
     private ScooterManager scooterManager;
     private String clientUsername; //username do cliente - lock?
 
+    /**
+     * ServerWorker's constructor
+     * @param connection TaggedConenction
+     * @param scooterManager ScooterManger
+     */
     public ServerWorker(TaggedConnection connection, ScooterManager scooterManager){
         this.connection = connection;
         this.scooterManager = scooterManager;

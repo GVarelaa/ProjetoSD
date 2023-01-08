@@ -14,20 +14,40 @@ import java.util.List;
 public class Client {
     private final Demultiplexer multiplexer;
 
+    /**
+     * Client's Constructor
+     * @throws IOException Exception
+     */
     public Client() throws IOException{
         Socket socket = new Socket("localhost", 12345);
         TaggedConnection connection = new TaggedConnection(socket);
         this.multiplexer = new Demultiplexer(connection);
     }
 
+    /**
+     * Starts a multiplexer
+     * @throws IOException Exception
+     */
     public void start() throws IOException{
         this.multiplexer.start();
     }
 
+    /**
+     * Closes a multiplexer
+     * @throws IOException Exception
+     */
     public void close() throws IOException {
         this.multiplexer.close();
     }
 
+    /**
+     * Registration of an user
+     * @param username user's name
+     * @param password user's password
+     * @return response
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     public boolean register(String username, String password) throws IOException, InterruptedException {
         // send request
         int size = 4 + username.length() + password.length();
@@ -47,6 +67,14 @@ public class Client {
         return flag;
     }
 
+    /**
+     * Login of an user
+     * @param username user's name
+     * @param password user's password
+     * @return response
+     * @throws IOException Exception
+     * @throws InterruptedException Exception
+     */
     public boolean login(String username, String password) throws IOException, InterruptedException {
         int size = 4 + username.length() + password.length();
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
