@@ -232,13 +232,12 @@ public class ScooterManager {
         }
 
         nearScooter.setIsFree(false);
+        Reservation r = new Reservation(nearScooter, username);
+        nearScooter.lockScooter.unlock();
 
         this.reservationsLock.lock();
 
         try {
-            nearScooter.lockScooter.unlock();
-
-            Reservation r = new Reservation(nearScooter, username);
             this.reservationID = r.getReservationID(); // para a condição
 
             this.rewardsLock.lock();
@@ -248,7 +247,7 @@ public class ScooterManager {
             this.reservations.put(r.getReservationID(), r);
             System.out.println(this.reservations.size());
 
-            return r; // clone???
+            return r; 
         } finally {
             this.reservationsLock.unlock();
         }
