@@ -200,7 +200,7 @@ public class Server {
     final static int WORKERS_PER_CONNECTION = 50;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        ScooterManager scooterManager = new ScooterManager();
+        ScooterManager scooterManager = new ScooterManager(2, 20, 15);
 
         while(true){
             Socket socket = serverSocket.accept();

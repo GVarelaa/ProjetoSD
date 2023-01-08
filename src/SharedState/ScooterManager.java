@@ -14,9 +14,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManager {
-    private final static int D = 2;
-    private final static int N = 10; // dimensão do mapa
-    private final static int S = 15; // número de scooters fixo,
+    private int D;
+    private int N; // dimensão do mapa
+    private int S; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
     private Map<String, User> users;
     private ReentrantReadWriteLock.ReadLock usersReadLock;
@@ -31,9 +31,15 @@ public class ScooterManager {
 
 
     /**
-     * Instantiates scooters map and collection lock
+     * Instantiates a scooter manager shared state
+     * @param D radius of search
+     * @param N size of the map
+     * @param S number of scooters
      */
-    public ScooterManager(){
+    public ScooterManager(int D, int N, int S){
+        this.D = D;
+        this.N = N;
+        this.S = S;
         this.scooters = new Scooter[S];
 
         this.users = new HashMap<>();
@@ -67,9 +73,9 @@ public class ScooterManager {
 
     public void register(String username, String password) throws UsernameAlreadyExistsException {
         try {
-            this.usersWriteLock.lock();
+            this.usersWriteLock.lock(); // Total control of users collection
 
-            if (this.users.containsKey(username)) {
+            if (this.users.containsKey(username)) { // Must be inside critial section, otherwise there can be two registers at the same time
                 throw new UsernameAlreadyExistsException("Username " + username + " already exists!");
             }
 
@@ -203,32 +209,33 @@ public class ScooterManager {
         Scooter nearScooter = null;
         System.out.println("Thread " + Thread.currentThread().getName() + " started activating scooter at position " + p.toString());
 
-        try{
-            for (Scooter scooter: this.scooters) { // Iterate over scooters set
-                scooter.lockScooter.lock();
-                Position scooterPosition = scooter.getPosition();
-                if (scooter.getIsFree() && scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
-                    if (nearScooter == null) {
+        for (Scooter scooter: this.scooters) { // Iterate over scooters set
+            scooter.lockScooter.lock();
+            Position scooterPosition = scooter.getPosition();
+            if (scooter.getIsFree() && scooterPosition.inRadius(p, D)) { // If scooterPosition in radius D of p
+                if (nearScooter == null) {
+                    nearScooter = scooter;
+                }
+                else {
+                    if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
+                        nearScooter.lockScooter.unlock();
                         nearScooter = scooter;
                     }
-                    else {
-                        if (scooterPosition.distanceTo(p) < (nearScooter.getPosition().distanceTo(p))) {
-                            nearScooter.lockScooter.unlock();
-                            nearScooter = scooter;
-                        }
-                        else scooter.lockScooter.unlock();
-                    }
+                    else scooter.lockScooter.unlock();
                 }
-                else scooter.lockScooter.unlock(); // ir libertando à medida
             }
+            else scooter.lockScooter.unlock(); // ir libertando à medida
+        }
 
-            if (nearScooter == null) {
-                throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
-            }
+        if (nearScooter == null) {
+            throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
+        }
 
-            nearScooter.setIsFree(false);
+        nearScooter.setIsFree(false);
 
-            this.reservationsLock.lock();
+        this.reservationsLock.lock();
+
+        try {
             nearScooter.lockScooter.unlock();
 
             Reservation r = new Reservation(nearScooter, username);
@@ -242,10 +249,10 @@ public class ScooterManager {
             System.out.println(this.reservations.size());
 
             return r; // clone???
-        }
-        finally {
+        } finally {
             this.reservationsLock.unlock();
         }
+
     }
 
 
