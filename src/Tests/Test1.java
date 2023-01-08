@@ -5,11 +5,11 @@ import Exceptions.NonExistentUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 import SharedState.Position;
 import SharedState.Reservation;
-import SharedState.ScooterManager;
+import SharedState.ScooterManagerImpl;
 
 public class Test1 {
     public static void main(String[] args) throws UsernameAlreadyExistsException, NonExistentUsernameException, InterruptedException {
-        ScooterManager sm = new ScooterManager(20, 20, 10);
+        ScooterManagerImpl sm = new ScooterManagerImpl(20, 20, 10);
         sm.register("miguel", "mike");
         sm.login("miguel", "mike");
 

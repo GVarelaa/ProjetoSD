@@ -7,33 +7,61 @@ public class Position {
     private int x;
     private int y;
 
+    /**
+     * Constructor of a Position
+     */
     public Position() {
         this.x = 0;
         this.y = 0;
     }
 
+    /**
+     * Constructor of a Position with x and y
+     * @param x x
+     * @param y y
+     */
     public Position(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * Constructor of a Position with a position
+     * @param pos Given position
+     */
     public Position(Position pos) {
         this.x = pos.getX();
         this.y = pos.getY();
     }
 
+    /**
+     * Gets the x of a Position
+     * @return x
+     */
     public int getX() {
         return this.x;
     }
 
+    /**
+     * Gets the y of a Position
+     * @return y
+     */
     public int getY() {
         return this.y;
     }
 
+    /**
+     * Sets the x of a Position
+     * @param x x
+     */
     public void setX(int x) {
         this.x = x;
     }
 
+    /**
+     * Sets the y of a Position
+     * @param y y
+     */
     public void setY(int y) {
         this.y = y;
     }
@@ -59,6 +87,12 @@ public class Position {
         return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
     }
 
+    /**
+     * Calculates the distance between two points
+     * @param x x
+     * @param y y
+     * @return the distance (double) between these two points
+     */
     public double distanceTo(int x, int y){
         return Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2));
     }

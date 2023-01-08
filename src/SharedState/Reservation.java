@@ -12,6 +12,11 @@ public class Reservation {
     private String username;
     private static int idCount = 0;
 
+    /**
+     * Constructor of a reservation of a scooter to a determined user
+     * @param scooter scooter
+     * @param username user
+     */
     public Reservation(Scooter scooter, String username) {
         this.reservationID = idCount++;
         this.scooter = scooter;
@@ -20,6 +25,11 @@ public class Reservation {
         this.username = username;
     }
 
+    /**
+     * Constructor of a reservation
+     * @param codReservation code reservation
+     * @param p Position
+     */
     public Reservation(int codReservation, Position p) { // Para o cliente poder receber reservas (talvez mude depois)
         this.reservationID = codReservation;
         this.initialPosition = p;
@@ -29,30 +39,58 @@ public class Reservation {
         return this.reservationID;
     }
 
+    /**
+     * Gets a scooter
+     * @return Returns a scooter
+     */
     public Scooter getScooter(){
         return this.scooter;
     }
 
+    /**
+     * Gets the initial position of a scooter
+     * @return Position
+     */
     public Position getInitialPosition(){
         return this.initialPosition.clone();
     }
 
+    /**
+     * Gets the time of a reservation
+     * @return time
+     */
     public LocalDateTime getTimestamp() {
         return this.timestamp;
     }
 
+    /**
+     * Gets the username of the user who made the reservation
+     * @return username
+     */
     public String getUsername() {
         return this.username;
     }
 
+    /**
+     * Sets the initial position of a reservation
+     * @param initialPosition initial position
+     */
     public void setInitialPosition(Position initialPosition){
         this.initialPosition = initialPosition.clone();
     }
 
+    /**
+     * Sets time of a reservation
+     * @param timestamp time
+     */
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
+    /**
+     * Sets the username of the user who made the reservation
+     * @param username name
+     */
     public void setUsername(String username) {
         this.username = username;
     }

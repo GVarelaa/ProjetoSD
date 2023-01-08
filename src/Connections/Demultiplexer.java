@@ -20,6 +20,11 @@ public class Demultiplexer implements AutoCloseable{
         final ArrayDeque<byte[]> queue = new ArrayDeque<>();
     }
 
+    /**
+     * Gets a list with buffers of a given tag
+     * @param tag Tag of connection
+     * @return Returns an entry set with buffers
+     */
     private Entry get(int tag) {
         Entry e = this.buffers.get(tag);
 
@@ -31,13 +36,19 @@ public class Demultiplexer implements AutoCloseable{
         return e;
     }
 
+    /**
+     * Constructor of a demultiplexer of a connection
+     * @param conn id of connection
+     */
     public Demultiplexer (TaggedConnection conn) {
         this.buffers = new HashMap<>();
         this.lockBuffers = new ReentrantLock();
         this.connection = conn;
     }
 
-    // receber um frame e encaminhá-lo para o respetivo buffer
+    /**
+     * Receives a frame and sends it to its buffer
+     */
     public void start() throws IOException {
         new Thread(() -> {
             try {
@@ -68,14 +79,32 @@ public class Demultiplexer implements AutoCloseable{
         }).start();
     }
 
+    /**
+     * Sends a tagged frame
+     * @param frame frame
+     * @throws IOException exception
+     */
     public void send(Frame frame) throws IOException{
         this.send(frame.tag, frame.data);
     }
 
+    /**
+     * Sends a frame
+     * @param tag tag
+     * @param data data
+     * @throws IOException exception
+     */
     public void send(int tag, byte[] data) throws IOException{
         this.connection.send(tag, data);
     }
 
+    /**
+     * Receive a tag to put it in the queue
+     * @param tag tag
+     * @return returns an updated queue
+     * @throws IOException exception
+     * @throws InterruptedException exception
+     */
     public byte[] receive(int tag) throws IOException, InterruptedException{
         try {
             lockBuffers.lock();
@@ -97,6 +126,10 @@ public class Demultiplexer implements AutoCloseable{
         }
     }
 
+    /**
+     * Closes a connection
+     * @throws IOException exception
+     */
     public void close() throws IOException{
         this.connection.close();
     }

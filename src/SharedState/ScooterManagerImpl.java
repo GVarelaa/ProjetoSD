@@ -5,7 +5,6 @@ import Exceptions.NonExistentUsernameException;
 import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
 
-import java.security.spec.PSSParameterSpec;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -13,10 +12,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ScooterManager {
-    private int D;
-    private int N; // dimensão do mapa
-    private int S; // número de scooters fixo,
+public class ScooterManagerImpl implements IScooterManager{
+    private int D = 2;
+    private int N = 10; // dimensão do mapa
+    private int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
     private Map<String, User> users;
     private ReentrantReadWriteLock.ReadLock usersReadLock;
@@ -36,7 +35,7 @@ public class ScooterManager {
      * @param N size of the map
      * @param S number of scooters
      */
-    public ScooterManager(int D, int N, int S){
+    public ScooterManagerImpl(int D, int N, int S){
         this.D = D;
         this.N = N;
         this.S = S;
@@ -71,6 +70,12 @@ public class ScooterManager {
         for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
     }
 
+    /**
+     * Registers an user
+     * @param username user's name
+     * @param password user's password
+     * @throws UsernameAlreadyExistsException Exception
+     */
     public void register(String username, String password) throws UsernameAlreadyExistsException {
         try {
             this.usersWriteLock.lock(); // Total control of users collection
@@ -88,6 +93,13 @@ public class ScooterManager {
         }
     }
 
+    /**
+     * Login in the app
+     * @param username user's name
+     * @param password user's password
+     * @return returns user
+     * @throws NonExistentUsernameException Exception
+     */
     public boolean login(String username, String password) throws NonExistentUsernameException {
         try {
             this.usersReadLock.lock();
@@ -105,6 +117,11 @@ public class ScooterManager {
         }
     }
 
+    /**
+     * Changes the notifications state of an user
+     * @param username user's name
+     * @param notificationsState state
+     */
     public void changeNotificationsState(String username, boolean notificationsState) {
         User user = null;
 
@@ -310,7 +327,7 @@ public class ScooterManager {
             Position initialPosition = reservation.getInitialPosition();
             double distance = initialPosition.distanceTo(parkingPosition);
             double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
-            double cost = ScooterManager.calculateCost(distance, duration);
+            double cost = ScooterManagerImpl.calculateCost(distance, duration);
 
             for(Reward r: this.rewards){ // Verificar se é uma recompensa
                 if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){
@@ -328,6 +345,9 @@ public class ScooterManager {
         }
     }
 
+    /**
+     * Generates all the rewards
+     */
     public void generateRewards(){
         // Percorrer as trotis para tirar as posições das livres
         // Para trotis em posições iguais, gerar recompensas
