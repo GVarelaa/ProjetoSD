@@ -318,7 +318,7 @@ public class ScooterManagerImpl implements IScooterManager{
     public static double calculateCost(double distance, double duration){
         double cost = 0;
 
-        cost = 0.15 * distance;//* duration;// 15 centimos por minuto
+        cost = 0.15 * distance + 0.15/60 * duration;// 15 centimos por minuto
 
         return - Math.round(cost * 100) / 100.0;  // Arredondar a 2 casas decimais
     }
