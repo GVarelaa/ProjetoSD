@@ -21,80 +21,80 @@ public class Client {
 
     private static void showMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         while (true){
-            System.out.println("============");
-            System.out.println("3... Show available scooters");
-            System.out.println("4... Activate scooter");
-            System.out.println("5... Park scooter");
-            System.out.println("6... Turn on notifications");
-            System.out.println("7... Turn off notifications");
-            System.out.println("8... Mostrar recompensas");
-            System.out.println("============");
+            System.out.println("\n===================================");
+            System.out.println("1... Mostrar trotinetes disponíveis");
+            System.out.println("2... Mostrar recompensas");
+            System.out.println("3... Reservar trotinete");
+            System.out.println("4... Estacionar trotinete");
+            System.out.println("5... Ativar notificações");
+            System.out.println("6... Desativar notificações");
+            System.out.println("===================================");
 
             int opt = sc.nextInt();
 
             switch (opt){
                 case 1:
-                    signUpMenu(sc, c);
-                    break;
-                case 2:
-                    signInMenu(sc, c);
-                    break;
-                case 3:
                     showScootersMenu(sc, c);
                     break;
-                case 4:
+
+                case 2:
+                    showRewardsMenu(sc, c);
+                    break;
+
+                case 3:
                     activateScooterMenu(sc, c);
                     break;
-                case 5:
+
+                case 4:
                     parkScooterMenu(sc, c);
                     break;
-                case 6:
+
+                case 5:
                     turnOnNotificationsMenu(sc, c);
+                    System.out.println("\nNotificações ativivadas com sucesso!");
                     break;
-                case 7:
+
+                case 6:
                     c.turnOnOffNotifications(false, null);
+                    System.out.println("\nNotificações desativadas com sucesso!");
                     break;
-                case 8:
-                    showRewardsMenu(sc, c);
+
+                default:
+                    break;
+
             }
         }
     }
 
     private static boolean signUpMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        System.out.println("============");
-        System.out.println("Registar utilizador");
-        System.out.println("============");
-        System.out.println("Introduza o username: ");
+        System.out.print("Introduza o username: ");
         String username = sc.next();
-        System.out.println("Introduza a password: ");
+        System.out.print("Introduza a password: ");
         String password = sc.next();
 
         boolean success = c.register(username, password);
         if (success == true){
             c.login(username, password);
-            System.out.println("Registo efetuado com sucesso!");
+            System.out.println("\nRegisto efetuado com sucesso!");
         }
         else {
-            System.out.println("Registo não efetuado!");
+            System.out.println("\nRegisto não efetuado!");
         }
         return success;
     }
 
     private static boolean signInMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        System.out.println("============");
-        System.out.println("Autenticar utilizador");
-        System.out.println("============");
-        System.out.println("Introduza o username: ");
+        System.out.print("Introduza o username: ");
         String username = sc.next();
-        System.out.println("Introduza a password: ");
+        System.out.print("Introduza a password: ");
         String password = sc.next();
 
         boolean success = c.login(username, password);
         if (success == true){
-            System.out.println("Login efetuado com sucesso!");
+            System.out.println("\nLogin efetuado com sucesso!");
         }
         else {
-            System.out.println("Login inválido!");
+            System.out.println("\nLogin inválido!\n");
         }
         return success;
     }
@@ -104,10 +104,10 @@ public class Client {
         boolean loggedIn = false;
 
         while (!registered && !loggedIn){
-            System.out.println("============");
+            System.out.println("===============");
             System.out.println("1... Registar");
             System.out.println("2... Autenticar");
-            System.out.println("============");
+            System.out.println("===============");
 
             int opt = sc.nextInt();
 
@@ -123,69 +123,88 @@ public class Client {
     }
 
     private static void showScootersMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        System.out.println("Indique a posição: ");
-        System.out.println("x: ");
+        System.out.println("Indique a sua posição atual");
+        System.out.print("x: ");
         int x = sc.nextInt();
-        System.out.println("y: ");
+        System.out.print("y: ");
         int y = sc.nextInt();
 
         Position p = new Position(x, y);
         List<Position> availScooters = c.listFreeScooters(p);
         if (availScooters.size() == 0){
-            System.out.println("Nenhuma scooter livre perto de " + p.toString());
+            System.out.println("\nNenhuma trotinete livre perto da posição " + p.toString());
         }
         for(Position pos: availScooters){
-            System.out.println("Scooter livre em " + pos.toString());
+            System.out.println("\nTrotinete livre na posição " + pos.toString());
+        }
+    }
+
+    private static void showRewardsMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
+        System.out.println("Indique a sua posição atual");
+        System.out.print("x: ");
+        int x = sc.nextInt();
+        System.out.print("y: ");
+        int y = sc.nextInt();
+
+        Position p = new Position(x, y);
+        List<List<Position>> rewards = c.listRewards(p);
+
+        if (rewards.size() == 0){
+            System.out.print("\nNão há recompensas perto da posição " + p.toString());
+        }
+
+        System.out.println();
+        for(List<Position> reward: rewards){
+            System.out.println("Recompensa disponível de " + reward.get(0).toString() + " para " + reward.get(1).toString());
         }
     }
 
     private static int activateScooterMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        System.out.println("Indique a posição: ");
-        System.out.println("x: ");
+        System.out.println("Indique a sua posição atual");
+        System.out.print("x: ");
         int x = sc.nextInt();
-        System.out.println("y: ");
+        System.out.print("y: ");
         int y = sc.nextInt();
 
         Position p = new Position(x, y);
         Reservation r = c.activateScooter(p);
         if (r != null){
-            System.out.println("Scooter na posição: " + r.getInitialPosition().toString());
-            System.out.println("Reservation ID: " + r.getReservationID());
+            System.out.println("\nTrotinete na posição " + r.getInitialPosition().toString() + " reservada com sucesso!");
+            System.out.println("Código de reserva atribuído: " + r.getReservationID());
             return r.getReservationID();
         }
         else{
-            System.out.println("Não há scooters disponíveis perto de " + p.toString());
+            System.out.print("\nNão há trotinetes disponíveis perto da posição " + p.toString());
             return -1;
         }
 
     }
 
     private static void parkScooterMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        System.out.println("Indique o código de reserva: ");
+        System.out.print("Indique o código de reserva: ");
         int reservation = sc.nextInt();
 
-        System.out.println("Indique a posição: ");
-        System.out.println("x: ");
+        System.out.println("Indique a sua posição atual");
+        System.out.print("x: ");
         int x = sc.nextInt();
-        System.out.println("y: ");
+        System.out.print("y: ");
         int y = sc.nextInt();
-
 
         double cost = c.parkScooter(new Position(x, y), reservation);
 
         if (cost > 0){
-            System.out.println("Prémio da recompensa: " + cost);
+            System.out.println("\nPrémio da recompensa: " + cost);
         }
         else if (cost < 0){
-            System.out.println("Custo da viagem: " + cost);
+            System.out.println("\nCusto da viagem: " + cost);
         }
     }
 
     private static void turnOnNotificationsMenu(Scanner sc, ScooterManager c){
-        System.out.println("Indique a posição: ");
-        System.out.println("x: ");
+        System.out.println("Indique a sua posição atual");
+        System.out.print("x: ");
         int x = sc.nextInt();
-        System.out.println("y: ");
+        System.out.print("y: ");
         int y = sc.nextInt();
 
         c.turnOnOffNotifications(true, new Position(x, y));
@@ -194,26 +213,4 @@ public class Client {
         });
         t.start();
     }
-
-    private static void showRewardsMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        System.out.println("Indique a posição");
-        System.out.println("x: ");
-        int x = sc.nextInt();
-        System.out.println("y: ");
-        int y = sc.nextInt();
-
-        Position p = new Position(x, y);
-        List<List<Position>> rewards = c.listRewards(p);
-
-        if (rewards.size() == 0){
-            System.out.println("Não há recompensas perto de " + p.toString());
-        }
-
-        for(List<Position> reward: rewards){
-            System.out.println("Recompensa disponível de " + reward.get(0).toString() + " para " + reward.get(1).toString());
-        }
-    }
-
-
-
 }
