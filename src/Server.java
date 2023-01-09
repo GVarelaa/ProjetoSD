@@ -171,7 +171,6 @@ class ServerWorker implements Runnable{
                         List<Reward> newRewards;
 
                         while(true){ // Notificações ligadas
-                            System.out.println("aqui");
                             try{
                                 newRewards = this.scooterManager.userNotifications(this.clientUsername, p, lastRewards);
                                 lastRewards = newRewards;
