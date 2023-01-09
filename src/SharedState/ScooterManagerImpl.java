@@ -133,6 +133,7 @@ public class ScooterManagerImpl implements IScooterManager{
      * @param password user's password
      * @return returns user
      * @throws NonExistentUsernameException Exception
+     * @throws WrongPasswordException Exception
      */
     public void login(String username, String password) throws NonExistentUsernameException, WrongPasswordException {
         try {

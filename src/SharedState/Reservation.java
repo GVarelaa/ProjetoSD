@@ -2,7 +2,6 @@ package SharedState;
 
 import java.time.LocalDateTime;
 
-// TODO: Add initial position -> check activateScooter method
 public class Reservation {
 
     private int reservationID;
