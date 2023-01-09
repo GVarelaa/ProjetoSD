@@ -60,12 +60,6 @@ public class ScooterManagerImpl implements IScooterManager{
         this.randomizeScooterPositions();
 
         new Thread(() -> this.generateRewards()).start();
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -150,7 +144,7 @@ public class ScooterManagerImpl implements IScooterManager{
 
             User user = this.users.get(username);
 
-            if (!user.getUsername().equals(username) && user.getPassword().equals(password)) {
+            if (!(user.getUsername().equals(username) && user.getPassword().equals(password))) {
                 throw new WrongPasswordException("A password não coincide!");
             }
         }
