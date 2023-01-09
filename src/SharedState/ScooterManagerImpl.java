@@ -1,9 +1,6 @@
 package SharedState;
 
-import Exceptions.NoScootersAvailableException;
-import Exceptions.NonExistentUsernameException;
-import Exceptions.NotificationsDisabledException;
-import Exceptions.UsernameAlreadyExistsException;
+import Exceptions.*;
 
 import java.beans.DefaultPersistenceDelegate;
 import java.time.LocalDateTime;
@@ -137,17 +134,19 @@ public class ScooterManagerImpl implements IScooterManager{
      * @return returns user
      * @throws NonExistentUsernameException Exception
      */
-    public boolean login(String username, String password) throws NonExistentUsernameException {
+    public void login(String username, String password) throws NonExistentUsernameException, WrongPasswordException {
         try {
             this.usersReadLock.lock();
 
             if (!this.users.containsKey(username)) {
-                throw new NonExistentUsernameException("Username " + username + " doesn't exist!");
+                throw new NonExistentUsernameException("O user " + username + " não existe!");
             }
 
             User user = this.users.get(username);
 
-            return user.getUsername().equals(username) && user.getPassword().equals(password);
+            if (!user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                throw new WrongPasswordException("A password não coincide!");
+            }
         }
         finally {
             this.usersReadLock.unlock();
@@ -155,7 +154,19 @@ public class ScooterManagerImpl implements IScooterManager{
     }
 
     /**
-     * Changes the notifications state of a user
+     * Randomizes the scooters distribution in the map
+     */
+    private void randomizeScooterPositions(){
+        Random random = new Random();
+        for(int i=0; i<S; i++){
+            int x = random.nextInt(N);
+            int y = random.nextInt(N);
+            this.scooters[i] = new Scooter(new Position(x, y));
+        }
+    }
+
+    /**
+     * Changes the notifications state of an user
      * @param username user's name
      * @param notificationsState state
      */
@@ -180,19 +191,6 @@ public class ScooterManagerImpl implements IScooterManager{
             user.lock.unlock();
         }
     }
-
-    /**
-     * Randomizes the scooters distribution in the map
-     */
-    private void randomizeScooterPositions(){
-        Random random = new Random();
-        for(int i=0; i<S; i++){
-            int x = random.nextInt(N);
-            int y = random.nextInt(N);
-            this.scooters[i] = new Scooter(new Position(x, y));
-        }
-    }
-
 
     /**
      * List the available scooters in a radius D (pre-configured) of p
@@ -305,7 +303,6 @@ public class ScooterManagerImpl implements IScooterManager{
 
     }
 
-
     /**
      * Calculates the cost of a reservation given the distance and duration
      * @param distance covered distance
@@ -322,7 +319,6 @@ public class ScooterManagerImpl implements IScooterManager{
 
     /**
      * Parks a scooter given the reservation code and the final position of the ride
-     * (A ride can be a reward)
      * @param reservationID reservation code
      * @param parkingPosition final position of the scooter
      * @return the cost of the ride or the reward (if applicable)
@@ -380,10 +376,9 @@ public class ScooterManagerImpl implements IScooterManager{
 
     /**
      * Generates all the rewards
+     * The rewards will be generated on positions that have more than one scooter
      */
     public void generateRewards(){
-        // Percorrer as trotis para tirar as posições das livres
-        // Para trotis em posições iguais, gerar recompensas
         int lastActivate = -2;
         int lastPark = -2;
 
@@ -451,6 +446,11 @@ public class ScooterManagerImpl implements IScooterManager{
         }
     }
 
+    /**
+     * Gets the positions where rewards should be generated
+     * @param positions List of positions
+     * @return List of positions that have more than one scooter
+     */
     public List<Position> scootersInSamePositions(List<Position> positions){
         List<Position> samePositions = new ArrayList<>();
 
@@ -481,29 +481,12 @@ public class ScooterManagerImpl implements IScooterManager{
         return rewards;
     }
 
-
     /**
-     * Calculates the elements that are in the first list but aren't in the second one
-     * @param newRewards newly generated rewards
-     * @param oldRewards old rewards (calculated before)
-     * @return the difference between the two lists
-     */
-    private List<Reward> getDiff(List<Reward> newRewards, List<Reward> oldRewards){
-        List<Reward> diff = new ArrayList<>();
-        for (Reward r: newRewards){
-            if (!oldRewards.contains(r)){
-                diff.add(r);
-            }
-        }
-        return diff;
-    }
-
-
-
-    /**
-     * Check if there are rewards on the radius of a given position and waits if there are no rewards
+     * Check if there are new rewards on the radius of a given position and waits for that otherwise
+     * @param username User to check if its notifications are activated
      * @param p Position
-     * @return List of new rewards on the radius of a given position
+     * @param lastRewards Stores the rewards from last notification (empty at the beginning)
+     * @return List of rewards on the radius of a given position
      */
     public List<Reward> userNotifications(String username, Position p, List<Reward> lastRewards) throws NotificationsDisabledException{
         try{

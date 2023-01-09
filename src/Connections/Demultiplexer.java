@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import Connections.TaggedConnection;
 import Connections.TaggedConnection.Frame;
 
 public class Demultiplexer implements AutoCloseable{
@@ -21,9 +20,9 @@ public class Demultiplexer implements AutoCloseable{
     }
 
     /**
-     * Gets a list with buffers of a given tag
+     * Gets a entry of a given tag
      * @param tag Tag of connection
-     * @return Returns an entry set with buffers
+     * @return Returns an entry
      */
     private Entry get(int tag) {
         Entry e = this.buffers.get(tag);
@@ -37,8 +36,8 @@ public class Demultiplexer implements AutoCloseable{
     }
 
     /**
-     * Constructor of a demultiplexer of a connection
-     * @param conn id of connection
+     * Connection's demultiplexer constructor
+     * @param conn connection
      */
     public Demultiplexer (TaggedConnection conn) {
         this.buffers = new HashMap<>();
@@ -47,7 +46,7 @@ public class Demultiplexer implements AutoCloseable{
     }
 
     /**
-     * Receives a frame and sends it to its buffer
+     * Receives a frame and forwards it to its buffer
      */
     public void start() throws IOException {
         new Thread(() -> {
@@ -80,7 +79,7 @@ public class Demultiplexer implements AutoCloseable{
     }
 
     /**
-     * Sends a tagged frame
+     * Sends a frame
      * @param frame frame
      * @throws IOException exception
      */
@@ -89,7 +88,7 @@ public class Demultiplexer implements AutoCloseable{
     }
 
     /**
-     * Sends a frame
+     * Sends a frame given its tag and data
      * @param tag tag
      * @param data data
      * @throws IOException exception
@@ -99,7 +98,7 @@ public class Demultiplexer implements AutoCloseable{
     }
 
     /**
-     * Receive a tag to put it in the queue
+     * Gets the entry with the given tag and updates its queue
      * @param tag tag
      * @return returns an updated queue
      * @throws IOException exception

@@ -1,8 +1,5 @@
 import Connections.TaggedConnection;
-import Exceptions.NoScootersAvailableException;
-import Exceptions.NonExistentUsernameException;
-import Exceptions.NotificationsDisabledException;
-import Exceptions.UsernameAlreadyExistsException;
+import Exceptions.*;
 import SharedState.*;
 
 import java.io.*;
@@ -71,7 +68,7 @@ class ServerWorker implements Runnable{
 
                         this.connection.send(2, byteStream.toByteArray());
                     }
-                    catch(NonExistentUsernameException e){
+                    catch(Exception e){
                         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);
                         DataOutputStream os = new DataOutputStream(byteStream);
                         os.writeBoolean(false); // Something went wrong

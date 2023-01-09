@@ -1,13 +1,17 @@
 package SharedState;
 
-import Exceptions.NoScootersAvailableException;
-import Exceptions.NonExistentUsernameException;
-import Exceptions.NotificationsDisabledException;
-import Exceptions.UsernameAlreadyExistsException;
+import Exceptions.*;
 
 import java.util.List;
 
 public interface IScooterManager {
+    /**
+     * Changes the notifications state on a user
+     * @param username Username
+     * @param notificationsState New notifications state
+     */
+    void changeNotificationsState(String username, boolean notificationsState);
+
     /**
      * Register a user in the server
      * @param username username of the user
@@ -20,10 +24,9 @@ public interface IScooterManager {
      * Login a user in the server
      * @param username username of the user
      * @param password password of the user
-     * @return if the user is logged in or not
      * @throws NonExistentUsernameException error if the username doesn't exist in the users collection
      */
-    boolean login(String username, String password) throws NonExistentUsernameException;
+    void login(String username, String password) throws NonExistentUsernameException, WrongPasswordException;
 
     /**
      * List the available scooters in a radius D (pre-configured) of p
@@ -35,7 +38,7 @@ public interface IScooterManager {
     /**
      * List the available rewards in a radius D (pre-configured) of p
      * @param p center of radius where rewards will be checked
-     * @return a list of the positions of the rewards available
+     * @return a list of the positions(initial and final) of the rewards available
      */
     List<List<Position>> listRewards(Position p);
 
@@ -50,7 +53,6 @@ public interface IScooterManager {
 
     /**
      * Parks a scooter given the reservation code and the final position of the ride
-     * (A ride can be a reward)
      * @param reservationId reservation code
      * @param parkingPosition final position of the scooter
      * @return the cost of the ride or the reward (if applicable)
@@ -58,16 +60,11 @@ public interface IScooterManager {
     double parkScooter(int reservationId, Position parkingPosition);
 
     /**
-     * Check if there are rewards on the radius of a given position and waits if there are no rewards
+     * Check if there are new rewards on the radius of a given position and waits for that otherwise
+     * @param username User to check if its notifications are activated
      * @param p Position
+     * @param lastRewards Stores the rewards from last notification (empty at the beginning)
      * @return List of rewards on the radius of a given position
      */
-    List<Reward> userNotifications(String username, Position p, List<Reward> oldRewards) throws NotificationsDisabledException;
-
-    /**
-     * Changes the notifications state on a user
-     * @param username Username
-     * @param notificationsState New notifications state
-     */
-    void changeNotificationsState(String username, boolean notificationsState);
+    List<Reward> userNotifications(String username, Position p, List<Reward> lastRewards) throws NotificationsDisabledException;
 }

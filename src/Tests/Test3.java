@@ -1,5 +1,8 @@
 package Tests;
 
+import Exceptions.NonExistentUsernameException;
+import Exceptions.UsernameAlreadyExistsException;
+import Exceptions.WrongPasswordException;
 import SharedState.Position;
 import SharedState.Reservation;
 import SharedState.ScooterManagerImpl;
@@ -14,17 +17,13 @@ public class Test3 {
         for (int i=0; i<threadNum; i++){
             int finalI = i;
             t[i] = new Thread(() -> {
-                try{
+                try {
                     sm.register(Integer.toString(finalI), "pass");
-                    boolean validLogin = sm.login(Integer.toString(finalI), "pass");
-                    if (validLogin == true){
-                        System.out.println(Thread.currentThread().getName() + " could register and login!");
-                    }
-                    else {
-                        System.out.println("Fail in thread " + Thread.currentThread().getName());
-                    }
-                } catch(Exception e){
-                    System.out.println(e.getMessage());
+                    sm.login(Integer.toString(finalI), "pass");
+                    System.out.println(Thread.currentThread().getName() + " could register and login!");
+
+                } catch (Exception e) {
+                    System.out.println("Fail in thread " + Thread.currentThread().getName());
                 }
             });
             t[i].start();

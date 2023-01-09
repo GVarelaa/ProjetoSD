@@ -1,10 +1,10 @@
-import SharedState.IScooterManager;
 import SharedState.Position;
 import SharedState.Reservation;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
+import static java.lang.Math.abs;
 
 public class Client {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -196,7 +196,7 @@ public class Client {
             System.out.println("\nPrémio da recompensa: " + cost);
         }
         else if (cost < 0){
-            System.out.println("\nCusto da viagem: " + cost);
+            System.out.println("\nCusto da viagem: " + abs(cost));
         }
     }
 
