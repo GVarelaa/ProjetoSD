@@ -231,7 +231,7 @@ public class ScooterManagerStub implements ScooterManager{
      * @param onOff false - Off, true - On
      * @param p given position or null if onOff == false
      */
-    public void turnOnNotifications(boolean onOff, Position p){
+    public void turnOnOffNotifications(boolean onOff, Position p){
         try{
             int size = 1 + (p != null ? 4 : 0); // (onOff)1 + (p)4 bytes
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);

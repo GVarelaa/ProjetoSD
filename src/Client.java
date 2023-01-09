@@ -20,7 +20,6 @@ public class Client {
     }
 
     private static void showMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
-        int codReservation = -1;
         while (true){
             System.out.println("============");
             System.out.println("3... Show available scooters");
@@ -44,16 +43,16 @@ public class Client {
                     showScootersMenu(sc, c);
                     break;
                 case 4:
-                    codReservation = activateScooterMenu(sc, c);
+                    activateScooterMenu(sc, c);
                     break;
                 case 5:
-                    parkScooterMenu(sc, c, codReservation);
+                    parkScooterMenu(sc, c);
                     break;
                 case 6:
                     turnOnNotificationsMenu(sc, c);
                     break;
                 case 7:
-                    c.turnOnNotifications(false, null);
+                    c.turnOnOffNotifications(false, null);
                     break;
                 case 8:
                     showRewardsMenu(sc, c);
@@ -161,14 +160,18 @@ public class Client {
 
     }
 
-    private static void parkScooterMenu(Scanner sc, ScooterManager c, int codReservation) throws IOException, InterruptedException {
+    private static void parkScooterMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
+        System.out.println("Indique o código de reserva: ");
+        int reservation = sc.nextInt();
+
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
         int x = sc.nextInt();
         System.out.println("y: ");
         int y = sc.nextInt();
 
-        double cost = c.parkScooter(new Position(x, y), codReservation);
+
+        double cost = c.parkScooter(new Position(x, y), reservation);
 
         if (cost > 0){
             System.out.println("Prémio da recompensa: " + cost);
@@ -185,7 +188,7 @@ public class Client {
         System.out.println("y: ");
         int y = sc.nextInt();
 
-        c.turnOnNotifications(true, new Position(x, y));
+        c.turnOnOffNotifications(true, new Position(x, y));
         Thread t = new Thread(() -> {
             c.waitForNotifications();
         });

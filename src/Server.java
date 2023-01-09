@@ -125,7 +125,6 @@ class ServerWorker implements Runnable{
                         os.writeInt(reservation.getReservationID());
                         os.write(reservation.getInitialPosition().serialize());
 
-
                         this.connection.send(5, byteStream.toByteArray());
                     }
                     catch (Exception e){
@@ -202,7 +201,7 @@ class ServerWorker implements Runnable{
 }
 
 public class Server {
-    final static int WORKERS_PER_CONNECTION = 50;
+    final static int WORKERS_PER_CONNECTION = 3;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
         IScooterManager scooterManager = new ScooterManagerImpl(2, 10, 15);

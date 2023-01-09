@@ -22,7 +22,7 @@ public interface ScooterManager {
 
     public double parkScooter(Position p, int codReservation) throws IOException, InterruptedException;
 
-    public void turnOnNotifications(boolean onOff, Position p);
+    public void turnOnOffNotifications(boolean onOff, Position p);
 
     public void waitForNotifications();
 }

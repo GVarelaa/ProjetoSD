@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManagerImpl implements IScooterManager{
-    private int D = 2;
+    private int D = 5;
     private int N = 10; // dimensão do mapa
     private int S = 15; // número de scooters fixo,
     private Scooter[] scooters; // coleção estática
