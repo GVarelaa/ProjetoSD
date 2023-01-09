@@ -9,6 +9,7 @@ public class User {
     private boolean notificationsState;
     public ReentrantLock lock;
 
+
     /**
      * User's Constructor
      */
@@ -91,21 +92,7 @@ public class User {
     }
 
     /**
-     * Deserialize an user
-     * @param data data
-     * @return New user
-     * @throws IOException Exception
-     */
-    public static User deserialize(byte[] data) throws IOException {
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-        String username = is.readUTF();
-        String password = is.readUTF();
-
-        return new User(username, password);
-    }
-
-    /**
-     * Serialize an user
+     * Serializes an user
      * @return array of bytes
      * @throws IOException Exception
      */
@@ -119,5 +106,19 @@ public class User {
         os.writeUTF(this.password);
 
         return byteArray.toByteArray();
+    }
+
+    /**
+     * Deserializes an user
+     * @param data data
+     * @return New user
+     * @throws IOException Exception
+     */
+    public static User deserialize(byte[] data) throws IOException {
+        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+        String username = is.readUTF();
+        String password = is.readUTF();
+
+        return new User(username, password);
     }
 }

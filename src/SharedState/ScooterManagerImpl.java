@@ -1,8 +1,6 @@
 package SharedState;
 
 import Exceptions.*;
-
-import java.beans.DefaultPersistenceDelegate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -14,7 +12,7 @@ public class ScooterManagerImpl implements IScooterManager{
     private int R = 2;
     private int D = 5;
     private int N = 10; // dimensão do mapa
-    private int S = 15; // número de scooters fixo,
+    private int S = 15; // número de scooters fixo
     private Scooter[] scooters; // coleção estática
     private Map<String, User> users;
     private ReentrantReadWriteLock.ReadLock usersReadLock;
@@ -70,6 +68,13 @@ public class ScooterManagerImpl implements IScooterManager{
         }
     }
 
+    /**
+     * Instantiates a scooter manager shared state
+     * @param D radius of scooters search
+     * @param N size of the map
+     * @param S number of scooters
+     * @param R radius of rewards search
+     */
     public ScooterManagerImpl(int D, int N, int S, int R){
         this.D = D;
         this.N = N;

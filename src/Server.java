@@ -12,12 +12,12 @@ import java.util.List;
 class ServerWorker implements Runnable{
     private TaggedConnection connection;
     private IScooterManager scooterManager;
-    private String clientUsername; //username do cliente - lock?
+    private String clientUsername;
 
     /**
      * ServerWorker's constructor
-     * @param connection TaggedConenction
-     * @param scooterManager ScooterManger
+     * @param connection TaggedConnection
+     * @param scooterManager ScooterManager
      */
     public ServerWorker(TaggedConnection connection, IScooterManager scooterManager){
         this.connection = connection;
@@ -191,10 +191,7 @@ class ServerWorker implements Runnable{
                 }
             }
         }
-        catch (IOException ignored){
-            //mudar
-        }
-
+        catch (IOException ignored){}
     }
 }
 

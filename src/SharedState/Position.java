@@ -1,6 +1,5 @@
 package SharedState;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 
 public class Position {
@@ -16,9 +15,9 @@ public class Position {
     }
 
     /**
-     * Constructor of a Position with x and y
-     * @param x x
-     * @param y y
+     * Constructor of a Position given x and y values
+     * @param x x value
+     * @param y y value
      */
     public Position(int x, int y) {
         this.x = x;
@@ -26,7 +25,7 @@ public class Position {
     }
 
     /**
-     * Constructor of a Position with a position
+     * Constructor of a Position given a position
      * @param pos Given position
      */
     public Position(Position pos) {
@@ -35,32 +34,32 @@ public class Position {
     }
 
     /**
-     * Gets the x of a Position
-     * @return x
+     * Gets the x value of a Position
+     * @return x value
      */
     public int getX() {
         return this.x;
     }
 
     /**
-     * Gets the y of a Position
-     * @return y
+     * Gets the y value of a Position
+     * @return y value
      */
     public int getY() {
         return this.y;
     }
 
     /**
-     * Sets the x of a Position
-     * @param x x
+     * Sets the x value of a Position
+     * @param x x value
      */
     public void setX(int x) {
         this.x = x;
     }
 
     /**
-     * Sets the y of a Position
-     * @param y y
+     * Sets the y value of a Position
+     * @param y y value
      */
     public void setY(int y) {
         this.y = y;
@@ -74,6 +73,13 @@ public class Position {
     public boolean inRadius(Position center, int radius){
         return this.distanceTo(center) <= (double)radius;
     }
+
+    /**
+     * Checks if the current position is in a given radius of a center position
+     * @param x x value of the center of the radius
+     * @param y y value of the center of the radius
+     * @param radius radius of circumference
+     */
     public boolean inRadius(int x, int y, int radius){
         return this.distanceTo(x, y) <= (double)radius;
     }
@@ -89,14 +95,20 @@ public class Position {
 
     /**
      * Calculates the distance between two points
-     * @param x x
-     * @param y y
+     * @param x x value
+     * @param y y value
      * @return the distance (double) between these two points
      */
     public double distanceTo(int x, int y){
         return Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2));
     }
 
+    /**
+     * Deserialization of a position
+     * @param is Input Stream
+     * @return returns a position
+     * @throws IOException Exception
+     */
     public static Position deserialize(DataInputStream is) throws IOException {
         int x = is.readInt();
         int y = is.readInt();
@@ -104,6 +116,11 @@ public class Position {
         return new Position(x,y);
     }
 
+    /**
+     * Serializes a position
+     * @return returns an array of bytes
+     * @throws IOException Exception
+     */
     public byte[] serialize() throws IOException{
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream(8);
         DataOutputStream os = new DataOutputStream(byteArray);
@@ -114,6 +131,10 @@ public class Position {
         return byteArray.toByteArray();
     }
 
+    /**
+     *  Gets the string representation of a position
+     * @return a position in the form of a string
+     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("");
@@ -123,6 +144,11 @@ public class Position {
         return sb.toString();
     }
 
+    /**
+     * Checks if two positions are equal
+     * @param o Object being compared
+     * @return true if they are equal, false otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -131,6 +157,10 @@ public class Position {
         return this.x == that.getX() && this.y == that.getY();
     }
 
+    /**
+     * Clones the instance
+     * @return a copy of current instance
+     */
     @Override
     public Position clone() {
         return new Position(this);
