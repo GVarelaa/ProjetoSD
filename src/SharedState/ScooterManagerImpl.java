@@ -5,6 +5,7 @@ import Exceptions.NonExistentUsernameException;
 import Exceptions.NotificationsDisabledException;
 import Exceptions.UsernameAlreadyExistsException;
 
+import java.beans.DefaultPersistenceDelegate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -26,7 +27,8 @@ public class ScooterManagerImpl implements IScooterManager{
     public ReentrantLock rewardsLock;
     private Condition rewardsCond;
     public Condition notificationsCond;
-    private int reservationID; // Para a condição da variável de condição
+    private int lastActivate; // Para a condição da variável de condição
+    private int lastPark;
 
 
     /**
@@ -55,7 +57,8 @@ public class ScooterManagerImpl implements IScooterManager{
         this.rewardsCond = this.rewardsLock.newCondition();
         this.notificationsCond = this.rewardsLock.newCondition();
 
-        this.reservationID = -1;
+        this.lastActivate = -1;
+        this.lastPark = -1;
 
         this.randomizeScooterPositions();
 
@@ -66,8 +69,6 @@ public class ScooterManagerImpl implements IScooterManager{
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
     }
 
     /**
@@ -255,9 +256,9 @@ public class ScooterManagerImpl implements IScooterManager{
         this.reservationsLock.lock();
 
         try {
-            this.reservationID = r.getReservationID(); // para a condição
-
             this.rewardsLock.lock();
+            this.lastActivate = r.getReservationID(); // para a condição
+
             this.rewardsCond.signal();
             this.rewardsLock.unlock();
 
@@ -283,7 +284,7 @@ public class ScooterManagerImpl implements IScooterManager{
 
         cost = 0.15 * distance;//* duration;// 15 centimos por minuto
 
-        return Math.round(cost * 100) / 100.0;  // Arredondar a 2 casas decimais
+        return - Math.round(cost * 100) / 100.0;  // Arredondar a 2 casas decimais
     }
 
     /**
@@ -311,7 +312,7 @@ public class ScooterManagerImpl implements IScooterManager{
         }
 
         try {
-            this.reservationID = reservation.getReservationID(); // para a condição
+            this.lastPark = reservation.getReservationID(); // para a condição
 
             scooter = reservation.getScooter();
 
@@ -319,6 +320,7 @@ public class ScooterManagerImpl implements IScooterManager{
                 scooter.lockScooter.lock();
                 scooter.setPosition(parkingPosition);
                 scooter.setIsFree(true);
+                System.out.println(scooter.getPosition());
             }
             finally {
                 scooter.lockScooter.unlock();
@@ -332,7 +334,6 @@ public class ScooterManagerImpl implements IScooterManager{
             for(Reward r: this.rewards){ // Verificar se é uma recompensa
                 if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){
                     cost = r.getValue();
-                    this.rewards.remove(r);
                 }
             }
 
@@ -351,18 +352,24 @@ public class ScooterManagerImpl implements IScooterManager{
     public void generateRewards(){
         // Percorrer as trotis para tirar as posições das livres
         // Para trotis em posições iguais, gerar recompensas
-        int lastReservationID = -2;
+        int lastActivate = -2;
+        int lastPark = -2;
+
         while(true){ // Quando for estacionada
             try{
                 this.rewardsLock.lock();
 
-                while(this.reservationID == lastReservationID){ // igualar a -1 para calcular recompensas quando arranca
+                for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
+                System.out.println("aqui");
+
+                while(this.lastActivate == lastActivate && this.lastPark == lastPark){
                     try{
                         this.rewardsCond.await();
                     }
                     catch (Exception ignored){ // mudar
 
                     }
+                    System.out.println("acordei");
                 }
 
                 List<Position> positions = new ArrayList<>();
@@ -377,34 +384,37 @@ public class ScooterManagerImpl implements IScooterManager{
                 }
 
                 this.rewards.clear(); // Apagar as rewards que lá estavam
-                for(Position p1 : positions){
-                    if(positions.contains(p1)){ // Pelo menos 2 trotis no msm sítio
-                        for (int i = 0; i < N; i++){
-                            for (int j = 0; j < N; j++){
-                                boolean bool = true;
 
-                                for (Position p2 : positions){
-                                    if(p2.inRadius(i, j, D)){
-                                        bool = false;
-                                        break;
-                                    }
-                                }
+                List<Position> samePositions = this.scootersInSamePositions(positions);
+                for(Position p1 : samePositions){
+                    System.out.println(p1);
+                    for (int i = 0; i < N; i++){
+                        for (int j = 0; j < N; j++){
+                            boolean bool = true;
 
-                                if(bool){
-                                    this.rewards.add(new Reward(p1, new Position(i, j)));
+                            for (Position p2 : positions){
+                                if(p2.inRadius(i, j, D)){
+                                    bool = false;
+                                    break;
                                 }
+                            }
+
+                            if(bool){
+                                this.rewards.add(new Reward(p1, new Position(i, j)));
                             }
                         }
                     }
                 }
 
-
                 for (Scooter s : toUnlock){
                     s.lockScooter.unlock();
                 }
 
-                if (lastReservationID == -2) lastReservationID = -1; // Para executar uma primeira vez quando inicia
-                lastReservationID = this.reservationID;
+                if (lastActivate == -2) lastActivate = -1; // Para executar uma primeira vez quando inicia
+                if (lastPark == -2) lastPark = -1;
+
+                lastPark = this.lastPark;
+                lastActivate = this.lastActivate;
             }
             finally {
                 this.rewardsLock.unlock();
@@ -430,6 +440,18 @@ public class ScooterManagerImpl implements IScooterManager{
 
         return rewards;
     }
+
+    public List<Position> scootersInSamePositions(List<Position> positions){
+        List<Position> samePositions = new ArrayList<>();
+
+        for(Position p : positions){
+            if(Collections.frequency(positions, p) > 1 && !samePositions.contains(p))
+                samePositions.add(p);
+        }
+
+        return samePositions;
+    }
+
 
     /**
      * Calculates the elements that are in the first list but aren't in the second one
