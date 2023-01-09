@@ -386,8 +386,6 @@ public class ScooterManagerImpl implements IScooterManager{
             try{
                 this.rewardsLock.lock();
 
-                for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
-
                 while(this.lastActivate == lastActivate && this.lastPark == lastPark){
                     try{
                         this.rewardsCond.await();
