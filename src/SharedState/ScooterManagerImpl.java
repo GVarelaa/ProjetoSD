@@ -461,17 +461,19 @@ public class ScooterManagerImpl implements IScooterManager{
         return diff;
     }
 
+
+
     /**
      * Check if there are rewards on the radius of a given position and waits if there are no rewards
      * @param p Position
      * @return List of new rewards on the radius of a given position
      */
-    public List<Reward> userNotifications(String username, Position p, List<Reward> oldRewards) throws NotificationsDisabledException{
-        List<Reward> diff;
+    public List<Reward> userNotifications(String username, Position p, List<Reward> lastRewards) throws NotificationsDisabledException{
         try{
             this.rewardsLock.lock();
 
-            while((diff = this.getDiff(this.getRewardsFromPosition(p), oldRewards)).size() == 0){ // Condição : enquanto não houver recompensas no seu raio, adormece
+            rewards = getRewardsFromPosition(p);
+            while(getRewardsFromPosition(p) == null || (rewards.containsAll(lastRewards) && lastRewards.containsAll(rewards))){ // Condição : enquanto não houver recompensas no seu raio, adormece
                 User u;
                 try{
                     this.notificationsCond.await();
@@ -496,17 +498,15 @@ public class ScooterManagerImpl implements IScooterManager{
                     finally {
                         u.lock.unlock();
                     }
+
+                    rewards = getRewardsFromPosition(p);
                 }
                 catch (Exception ignored){
 
                 }
             }
 
-            for(Reward r: diff){
-                oldRewards.add(r);
-            }
-
-            return diff;
+            return rewards;
         }
         finally {
             this.rewardsLock.unlock();

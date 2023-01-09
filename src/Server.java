@@ -163,13 +163,14 @@ class ServerWorker implements Runnable{
                         int y = is.readInt();
                         Position p = new Position(x, y);
 
-                        List<Reward> oldRewards = new ArrayList<>();
+                        List<Reward> lastRewards = new ArrayList<>();
                         List<Reward> newRewards;
 
                         while(true){ // Notificações ligadas
                             System.out.println("aqui");
                             try{
-                                newRewards = this.scooterManager.userNotifications(this.clientUsername, p, oldRewards);
+                                newRewards = this.scooterManager.userNotifications(this.clientUsername, p, lastRewards);
+                                lastRewards = newRewards;
                             }
                             catch (NotificationsDisabledException e){
                                 break;
