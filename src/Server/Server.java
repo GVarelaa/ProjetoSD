@@ -36,7 +36,7 @@ class ServerWorker implements Runnable{
                     continue;
                 }
 
-                if(frame.tag == 1){   // é um pedido de registo
+                if(frame.tag == 1){
                     User user = User.deserialize(frame.data);
                     try{
                         this.scooterManager.register(user.getUsername(), user.getPassword());
@@ -55,7 +55,7 @@ class ServerWorker implements Runnable{
                         this.connection.send(1, byteStream.toByteArray());
                     }
                 }
-                else if(frame.tag == 2){   // é um pedido de autenticação
+                else if(frame.tag == 2){
                     User user = User.deserialize(frame.data);
 
                     try{
