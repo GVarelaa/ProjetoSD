@@ -42,6 +42,42 @@ public class ScooterManagerImpl implements IScooterManager{
         this.D = D;
         this.N = N;
         this.S = S;
+        this.R = D;
+        this.scooters = new Scooter[S];
+
+        this.users = new HashMap<>();
+        ReentrantReadWriteLock usersLock = new ReentrantReadWriteLock();
+        this.usersReadLock = usersLock.readLock();
+        this.usersWriteLock = usersLock.writeLock();
+
+        this.rewards = new ArrayList<>();
+        this.rewardsLock = new ReentrantLock();
+
+        this.reservations = new HashMap<>();
+        this.reservationsLock = new ReentrantLock();
+
+        this.rewardsCond = this.rewardsLock.newCondition();
+        this.notificationsCond = this.rewardsLock.newCondition();
+
+        this.lastActivate = -1;
+        this.lastPark = -1;
+
+        this.randomizeScooterPositions();
+
+        new Thread(() -> this.generateRewards()).start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ScooterManagerImpl(int D, int N, int S, int R){
+        this.D = D;
+        this.N = N;
+        this.S = S;
+        this.R = R;
         this.scooters = new Scooter[S];
 
         this.users = new HashMap<>();
