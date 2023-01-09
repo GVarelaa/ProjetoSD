@@ -1,15 +1,10 @@
 package Tests;
 
-import Exceptions.NonExistentUsernameException;
-import Exceptions.UsernameAlreadyExistsException;
-import Exceptions.WrongPasswordException;
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.ScooterManagerImpl;
+import Server.ScooterManagerI;
 
 public class Test3 {
     public static void main(String[] args) throws InterruptedException {
-        ScooterManagerImpl sm = new ScooterManagerImpl(20, 20, 10);
+        ScooterManagerI sm = new ScooterManagerI(20, 20, 10);
 
         int threadNum = 1000;
         Thread t[] = new Thread[threadNum];

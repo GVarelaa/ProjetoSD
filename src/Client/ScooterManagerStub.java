@@ -1,9 +1,10 @@
+package Client;
+
 import Connections.Demultiplexer;
 import Connections.TaggedConnection;
-import SharedState.IScooterManager;
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.Reward;
+import Server.Position;
+import Server.Reservation;
+import Server.Reward;
 
 import java.io.*;
 import java.net.Socket;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ScooterManagerStub implements ScooterManager{
+public class ScooterManagerStub implements ScooterManager {
     private final Demultiplexer multiplexer;
 
     public ScooterManagerStub() throws IOException{

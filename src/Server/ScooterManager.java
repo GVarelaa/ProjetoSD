@@ -1,9 +1,9 @@
-package SharedState;
+package Server;
 
 import Exceptions.*;
 import java.util.List;
 
-public interface IScooterManager {
+public interface ScooterManager {
     /**
      * Changes the notifications state on a user
      * @param username Username

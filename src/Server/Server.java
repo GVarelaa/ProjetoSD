@@ -1,6 +1,7 @@
+package Server;
+
 import Connections.TaggedConnection;
 import Exceptions.*;
-import SharedState.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -11,7 +12,7 @@ import java.util.List;
 
 class ServerWorker implements Runnable{
     private TaggedConnection connection;
-    private IScooterManager scooterManager;
+    private ScooterManager scooterManager;
     private String clientUsername;
 
     /**
@@ -19,7 +20,7 @@ class ServerWorker implements Runnable{
      * @param connection TaggedConnection
      * @param scooterManager ScooterManager
      */
-    public ServerWorker(TaggedConnection connection, IScooterManager scooterManager){
+    public ServerWorker(TaggedConnection connection, ScooterManager scooterManager){
         this.connection = connection;
         this.scooterManager = scooterManager;
         this.clientUsername = null;
@@ -212,7 +213,7 @@ public class Server {
     final static int WORKERS_PER_CONNECTION = 3;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        IScooterManager scooterManager = new ScooterManagerImpl(2, 10, 15);
+        ScooterManager scooterManager = new ScooterManagerI(2, 10, 15);
 
         while(true){
             Socket socket = serverSocket.accept();

@@ -1,16 +1,15 @@
 package Tests;
 
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.Reward;
-import SharedState.ScooterManagerImpl;
+import Server.Position;
+import Server.Reward;
+import Server.ScooterManagerI;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Test4 {
     public static void main(String[] args) throws InterruptedException {
-        ScooterManagerImpl sm = new ScooterManagerImpl(20, 20, 11);
+        ScooterManagerI sm = new ScooterManagerI(20, 20, 11);
 
         int threadNum = 10;
         Thread t[] = new Thread[threadNum*2];

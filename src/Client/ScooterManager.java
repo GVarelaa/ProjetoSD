@@ -1,6 +1,8 @@
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.Reward;
+package Client;
+
+import Server.Position;
+import Server.Reservation;
+import Server.Reward;
 
 import java.io.IOException;
 import java.util.List;
@@ -9,7 +11,7 @@ public interface ScooterManager {
 
     /**
      * Closes the connection
-     * @throws IOException
+     * @throws IOException Exception
      */
     public void close() throws IOException;
 
@@ -19,8 +21,6 @@ public interface ScooterManager {
      * @param username username
      * @param password password
      * @return confirmation
-     * @throws IOException
-     * @throws InterruptedException
      */
     public boolean register(String username, String password);
 
@@ -30,8 +30,6 @@ public interface ScooterManager {
      * @param username username
      * @param password password
      * @return confirmation
-     * @throws IOException
-     * @throws InterruptedException
      */
     public boolean login(String username, String password);
 
@@ -40,8 +38,6 @@ public interface ScooterManager {
      * Waits for the response of the server
      * @param p the position sent
      * @return a list of nearby scooter positions
-     * @throws IOException
-     * @throws InterruptedException
      */
     public List<Position> listFreeScooters(Position p);
 
@@ -50,8 +46,6 @@ public interface ScooterManager {
      * Waits for the response of the server
      * @param p the position sent
      * @return a list of pairs (origin - destination)
-     * @throws IOException
-     * @throws InterruptedException
      */
     public List<List<Position>> listRewards(Position p);
 
@@ -60,8 +54,6 @@ public interface ScooterManager {
      * Waits for the response of the server
      * @param p the position sent
      * @return a reservation (id and initial position)
-     * @throws IOException
-     * @throws InterruptedException
      */
     public Reservation activateScooter(Position p);
 
@@ -71,8 +63,6 @@ public interface ScooterManager {
      * @param p the position sent
      * @param codReservation the code of the reservation
      * @return an int (if > 0, the reward, if < 0, the cost)
-     * @throws IOException
-     * @throws InterruptedException
      */
     public double parkScooter(Position p, int codReservation);
 

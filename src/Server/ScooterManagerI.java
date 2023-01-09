@@ -1,4 +1,4 @@
-package SharedState;
+package Server;
 
 import Exceptions.*;
 import java.time.LocalDateTime;
@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ScooterManagerImpl implements IScooterManager{
+public class ScooterManagerI implements ScooterManager {
     private int R = 2;
     private int D = 5;
     private int N = 10; // dimensão do mapa
@@ -33,7 +33,7 @@ public class ScooterManagerImpl implements IScooterManager{
      * @param N size of the map
      * @param S number of scooters
      */
-    public ScooterManagerImpl(int D, int N, int S){
+    public ScooterManagerI(int D, int N, int S){
         this.D = D;
         this.N = N;
         this.S = S;
@@ -69,7 +69,7 @@ public class ScooterManagerImpl implements IScooterManager{
      * @param S number of scooters
      * @param R radius of rewards search
      */
-    public ScooterManagerImpl(int D, int N, int S, int R){
+    public ScooterManagerI(int D, int N, int S, int R){
         this.D = D;
         this.N = N;
         this.S = S;
@@ -115,7 +115,7 @@ public class ScooterManagerImpl implements IScooterManager{
             this.usersWriteLock.lock(); // Total control of users collection
 
             if (this.users.containsKey(username)) { // Must be inside critial section, otherwise there can be two registers at the same time
-                throw new UsernameAlreadyExistsException("Username " + username + " already exists!");
+                throw new UsernameAlreadyExistsException("O user " + username + " já existe!");
             }
 
             User newUser = new User(username, password);
@@ -278,7 +278,7 @@ public class ScooterManagerImpl implements IScooterManager{
         }
 
         if (nearScooter == null) {
-            throw new NoScootersAvailableException("There are no available scooters in a radius " + D + " of " + p.toString() + "!");
+            throw new NoScootersAvailableException("Não há trotinetes livres num raio " + D + " de " + p.toString() + "!");
         }
 
         nearScooter.setIsFree(false);
@@ -312,7 +312,7 @@ public class ScooterManagerImpl implements IScooterManager{
     public static double calculateCost(double distance, double duration){
         double cost = 0;
 
-        cost = 0.15 * distance;//* duration;// 15 centimos por minuto
+        cost = 0.15 * distance + 0.15/60 * duration;// 15 centimos por minuto
 
         return - Math.round(cost * 100) / 100.0;  // Arredondar a 2 casas decimais
     }
@@ -363,7 +363,7 @@ public class ScooterManagerImpl implements IScooterManager{
             Position initialPosition = reservation.getInitialPosition();
             double distance = initialPosition.distanceTo(parkingPosition);
             double duration = ChronoUnit.SECONDS.between(parkTimestamp, reservation.getTimestamp()); // Segundos
-            double cost = ScooterManagerImpl.calculateCost(distance, duration);
+            double cost = ScooterManagerI.calculateCost(distance, duration);
 
             for(Reward r: this.rewards){ // Verificar se é uma recompensa
                 if (r.getInitialPosition().equals(reservation.getInitialPosition()) && r.getFinalPosition().equals(parkingPosition)){
@@ -518,7 +518,7 @@ public class ScooterManagerImpl implements IScooterManager{
 
                     try {
                         if (!u.getNotificationsState()) {
-                            throw new NotificationsDisabledException("Notifications are disabled!");
+                            throw new NotificationsDisabledException("As notificações estão desativadas!");
                         }
                     }
                     finally {

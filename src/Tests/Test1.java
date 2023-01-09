@@ -1,16 +1,15 @@
 package Tests;
 
-import Exceptions.NoScootersAvailableException;
 import Exceptions.NonExistentUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 import Exceptions.WrongPasswordException;
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.ScooterManagerImpl;
+import Server.Position;
+import Server.Reservation;
+import Server.ScooterManagerI;
 
 public class Test1 {
     public static void main(String[] args) throws UsernameAlreadyExistsException, NonExistentUsernameException, WrongPasswordException, InterruptedException {
-        ScooterManagerImpl sm = new ScooterManagerImpl(20, 20, 10);
+        ScooterManagerI sm = new ScooterManagerI(20, 20, 10);
         sm.register("miguel", "mike");
         sm.login("miguel", "mike");
 
