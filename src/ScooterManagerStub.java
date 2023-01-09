@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ScooterManagerStub  {
+public class ScooterManagerStub implements ScooterManager{
     private final Demultiplexer multiplexer;
 
     public ScooterManagerStub() throws IOException{

@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class Client {
     public static void main(String[] args) throws IOException, InterruptedException {
-        ScooterManagerStub client = (ScooterManagerStub) new ScooterManagerStub();
+        ScooterManager client = new ScooterManagerStub();
         client.start();
 
         Scanner sc = new Scanner(System.in);
@@ -19,7 +19,7 @@ public class Client {
         client.close();
     }
 
-    private static void showMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static void showMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         int codReservation = -1;
         while (true){
             System.out.println("============");
@@ -61,7 +61,7 @@ public class Client {
         }
     }
 
-    private static boolean signUpMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static boolean signUpMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         System.out.println("============");
         System.out.println("Registar utilizador");
         System.out.println("============");
@@ -81,7 +81,7 @@ public class Client {
         return success;
     }
 
-    private static boolean signInMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static boolean signInMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         System.out.println("============");
         System.out.println("Autenticar utilizador");
         System.out.println("============");
@@ -100,7 +100,7 @@ public class Client {
         return success;
     }
 
-    private static void loginMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static void loginMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         boolean registered = false;
         boolean loggedIn = false;
 
@@ -123,7 +123,7 @@ public class Client {
 
     }
 
-    private static void showScootersMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static void showScootersMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
         int x = sc.nextInt();
@@ -140,7 +140,7 @@ public class Client {
         }
     }
 
-    private static int activateScooterMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static int activateScooterMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
         int x = sc.nextInt();
@@ -161,7 +161,7 @@ public class Client {
 
     }
 
-    private static void parkScooterMenu(Scanner sc, ScooterManagerStub c, int codReservation) throws IOException, InterruptedException {
+    private static void parkScooterMenu(Scanner sc, ScooterManager c, int codReservation) throws IOException, InterruptedException {
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
         int x = sc.nextInt();
@@ -178,7 +178,7 @@ public class Client {
         }
     }
 
-    private static void turnOnNotificationsMenu(Scanner sc, ScooterManagerStub c){
+    private static void turnOnNotificationsMenu(Scanner sc, ScooterManager c){
         System.out.println("Indique a posição: ");
         System.out.println("x: ");
         int x = sc.nextInt();
@@ -192,7 +192,7 @@ public class Client {
         t.start();
     }
 
-    private static void showRewardsMenu(Scanner sc, ScooterManagerStub c) throws IOException, InterruptedException {
+    private static void showRewardsMenu(Scanner sc, ScooterManager c) throws IOException, InterruptedException {
         System.out.println("Indique a posição");
         System.out.println("x: ");
         int x = sc.nextInt();
