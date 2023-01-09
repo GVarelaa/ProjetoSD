@@ -9,7 +9,6 @@ import static java.lang.Math.abs;
 public class Client {
     public static void main(String[] args) throws IOException, InterruptedException {
         ScooterManager client = new ScooterManagerStub();
-        client.start();
 
         Scanner sc = new Scanner(System.in);
 

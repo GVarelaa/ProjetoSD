@@ -6,21 +6,19 @@ import java.util.List;
 
 public interface ScooterManager {
 
-    public void start() throws IOException;
-
     public void close() throws IOException;
 
-    public boolean register(String username, String password) throws IOException, InterruptedException;
+    public boolean register(String username, String password);
 
-    public boolean login(String username, String password) throws IOException, InterruptedException;
+    public boolean login(String username, String password);
 
-    public List<Position> listFreeScooters(Position p) throws IOException, InterruptedException;
+    public List<Position> listFreeScooters(Position p);
 
-    public List<List<Position>> listRewards(Position p) throws IOException, InterruptedException;
+    public List<List<Position>> listRewards(Position p);
 
-    public Reservation activateScooter(Position p) throws IOException, InterruptedException;
+    public Reservation activateScooter(Position p);
 
-    public double parkScooter(Position p, int codReservation) throws IOException, InterruptedException;
+    public double parkScooter(Position p, int codReservation);
 
     public void turnOnOffNotifications(boolean onOff, Position p);
 
