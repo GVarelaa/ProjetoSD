@@ -1,6 +1,8 @@
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.Reward;
+package Client;
+
+import Server.Position;
+import Server.Reservation;
+import Server.Reward;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,4 +1,4 @@
-package SharedState;
+package Server;
 
 import java.io.*;
 

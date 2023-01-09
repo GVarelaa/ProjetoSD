@@ -1,17 +1,15 @@
 package Tests;
 
-import Exceptions.NoScootersAvailableException;
-import Exceptions.NonExistentUsernameException;
-import SharedState.Position;
-import SharedState.Reservation;
-import SharedState.ScooterManagerImpl;
+import Server.Position;
+import Server.Reservation;
+import Server.ScooterManagerI;
 
 import java.util.Random;
 
 public class RandomizeRequest {
-    ScooterManagerImpl sm;
+    ScooterManagerI sm;
 
-    public RandomizeRequest(ScooterManagerImpl sm){
+    public RandomizeRequest(ScooterManagerI sm){
         this.sm = sm;
     }
     public void doStuff(){

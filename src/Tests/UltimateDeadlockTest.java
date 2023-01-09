@@ -1,12 +1,10 @@
 package Tests;
 
-import SharedState.ScooterManagerImpl;
-
-import java.util.Random;
+import Server.ScooterManagerI;
 
 public class UltimateDeadlockTest {
     public static void main(String[] args) throws InterruptedException {
-        ScooterManagerImpl sm = new ScooterManagerImpl(20,20,1000,2);
+        ScooterManagerI sm = new ScooterManagerI(20,20,1000,2);
 
         int numThreads = 20000;
         Thread t[] = new Thread[numThreads];
