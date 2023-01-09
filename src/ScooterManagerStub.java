@@ -68,7 +68,6 @@ public class ScooterManagerStub implements ScooterManager{
     /**
      * Sends to the multiplexer a request for free scooters near p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @return a list of nearby scooter positions
      * @throws IOException
@@ -106,7 +105,6 @@ public class ScooterManagerStub implements ScooterManager{
     /**
      * Sends to the multiplexer a request for listing rewards near p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @return a list of pairs (origin - destination)
      * @throws IOException
@@ -151,7 +149,6 @@ public class ScooterManagerStub implements ScooterManager{
     /**
      * Sends to the multiplexer a request for activating a scooter the closest to p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @return a reservation (id and initial position)
      * @throws IOException
@@ -194,7 +191,6 @@ public class ScooterManagerStub implements ScooterManager{
     /**
      * Sends to the multiplexer a request for parking a scooter at p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @param codReservation the code of the reservation
      * @return an int (if > 0, the reward, if < 0, the cost)
@@ -233,7 +229,7 @@ public class ScooterManagerStub implements ScooterManager{
      */
     public void turnOnOffNotifications(boolean onOff, Position p){
         try{
-            int size = 1 + (p != null ? 4 : 0); // (onOff)1 + (p)4 bytes
+            int size = 1 + (p != null ? 8 : 0); // (onOff)1 + (p)8 bytes
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);
             DataOutputStream os = new DataOutputStream(byteStream);
             os.writeBoolean(onOff);
@@ -249,7 +245,6 @@ public class ScooterManagerStub implements ScooterManager{
         }
 
     }
-
 
     /**
      * Method that waits for notifications from the server regarding rewards near a position specified before
@@ -267,10 +262,12 @@ public class ScooterManagerStub implements ScooterManager{
                     rewards.add(r);
                 }
 
-                System.out.println("Novas notificações recebidas ....");
+                System.out.println("\nNovas notificações recebidas ....");
+                System.out.println("---------------------------------");
                 for(int i=0; i<length; i++){
                     System.out.println(rewards.get(i).toString());
                 }
+                System.out.println("---------------------------------\n");
             }
         } catch (Exception e){
 
