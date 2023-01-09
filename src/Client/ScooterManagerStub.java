@@ -192,7 +192,7 @@ public class ScooterManagerStub implements ScooterManager {
      */
     public Reservation activateScooter(Position p) {
         try{
-            int size = 8;;// + username.length(); // (x)4 + (y)4 bytes
+            int size = 8;;// (x)4 + (y)4 bytes
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
             DataOutputStream os = new DataOutputStream(byteArray);
             os.writeInt(p.getX());
@@ -210,7 +210,7 @@ public class ScooterManagerStub implements ScooterManager {
             if (returnCode >= 0) {
                 int x = is.readInt();
                 int y = is.readInt();
-                //int codReservation = is.readInt();
+
                 reservation = new Reservation(returnCode, new Position(x, y)) ;
             }
             else {
