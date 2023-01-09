@@ -20,21 +20,18 @@ public class Test4 {
             t[i] = new Thread(() -> {
                 try{
                     sm.register(Integer.toString(finalI), "pass");
-                    boolean validLogin = sm.login(Integer.toString(finalI), "pass");
-                    if (validLogin == true){
-                        List<Reward> rewards = sm.userNotifications(Integer.toString(finalI), new Position(1,2), new ArrayList<>());
-                        if (rewards != null){
-                            for(Reward r: rewards){
-                                System.out.println(r.toString());
-                            }
+                    sm.login(Integer.toString(finalI), "pass");
+
+                    List<Reward> rewards = sm.userNotifications(Integer.toString(finalI), new Position(1,2), new ArrayList<>());
+                    if (rewards != null){
+                        for(Reward r: rewards){
+                            System.out.println(r.toString());
                         }
-                        System.out.println(Thread.currentThread().getName() + " finnished!");
                     }
-                    else {
-                        System.out.println("Fail in thread " + Thread.currentThread().getName());
-                    }
+                    System.out.println(Thread.currentThread().getName() + " finished!");
+
                 } catch(Exception e){
-                    System.out.println(e.getMessage());
+                    System.out.println("Fail in thread " + Thread.currentThread().getName());
                 }
             });
             t[i].start();
@@ -44,18 +41,15 @@ public class Test4 {
         for (; i<threadNum*2; i++){
             int finalI = i;
             t[i] = new Thread(() -> {
-                try{
+                try {
                     sm.register(Integer.toString(finalI), "pass");
-                    boolean validLogin = sm.login(Integer.toString(finalI), "pass");
-                    if (validLogin == true){
-                        System.out.println(Thread.currentThread().getName() + " finnished!");
-                        sm.activateScooter(new Position(1,1), Integer.toString(finalI));
-                    }
-                    else {
-                        System.out.println("Fail in thread " + Thread.currentThread().getName());
-                    }
-                } catch(Exception e){
-                    System.out.println(e.getMessage());
+                    sm.login(Integer.toString(finalI), "pass");
+
+                    System.out.println(Thread.currentThread().getName() + " finished!");
+                    sm.activateScooter(new Position(1, 1), Integer.toString(finalI));
+
+                } catch (Exception e) {
+                    System.out.println("Fail in thread " + Thread.currentThread().getName());
                 }
             });
             t[i].start();
