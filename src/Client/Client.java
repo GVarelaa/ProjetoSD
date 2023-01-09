@@ -197,10 +197,10 @@ public class Client {
         double cost = c.parkScooter(new Position(x, y), reservation);
 
         if (cost > 0){
-            System.out.println("\nPrémio da recompensa: " + cost);
+            System.out.println("\nPrémio da recompensa: " + cost + "€");
         }
         else if (cost < 0){
-            System.out.println("\nCusto da viagem: " + abs(cost));
+            System.out.println("\nCusto da viagem: " + abs(cost) + "€");
         }
     }
 
@@ -219,16 +219,16 @@ public class Client {
                 if (rewards == null)
                     break;
 
-                System.out.println("\n----------------------------------");
-                System.out.println("   Novas notificações recebidas");
-                System.out.println("----------------------------------");
+                System.out.println("\n--------------------------------------------");
+                System.out.println("        Novas notificações recebidas        ");
+                System.out.println("--------------------------------------------");
 
                 for(int i=0; i<rewards.size(); i++){
                     String initPos = rewards.get(i).getInitialPosition().toString();
                     String finalPos = rewards.get(i).getFinalPosition().toString();
                     System.out.println("Recompensa disponível de " + initPos + " para " + finalPos);
                 }
-                System.out.println("----------------------------------\n");
+                System.out.println("--------------------------------------------\n");
             }
         });
         t.start();
