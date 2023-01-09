@@ -2,7 +2,6 @@ package SharedState;
 
 import java.time.LocalDateTime;
 
-// TODO: Add initial position -> check activateScooter method
 public class Reservation {
 
     private int reservationID;
@@ -30,11 +29,15 @@ public class Reservation {
      * @param codReservation code reservation
      * @param p Position
      */
-    public Reservation(int codReservation, Position p) { // Para o cliente poder receber reservas (talvez mude depois)
+    public Reservation(int codReservation, Position p) {
         this.reservationID = codReservation;
         this.initialPosition = p;
     }
 
+    /**
+     * Gets the reservation id
+     * @return Reservation ID
+     */
     public int getReservationID() {
         return this.reservationID;
     }
@@ -96,9 +99,10 @@ public class Reservation {
     }
 
     /**
-     * Get the string representation of a reservation
+     * Gets the string representation of a reservation
      * @return a reservation in the form of a string
      */
+    @Override
     public String toString(){
         return this.reservationID + " , " + this.initialPosition + " , " + this.username + " , " + this.timestamp + "\n";
     }

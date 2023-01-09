@@ -9,7 +9,6 @@ import static java.lang.Math.abs;
 public class Client {
     public static void main(String[] args) throws IOException, InterruptedException {
         ScooterManager client = new ScooterManagerStub();
-        client.start();
 
         Scanner sc = new Scanner(System.in);
 
@@ -131,11 +130,13 @@ public class Client {
 
         Position p = new Position(x, y);
         List<Position> availScooters = c.listFreeScooters(p);
+
+        System.out.println();
         if (availScooters.size() == 0){
-            System.out.println("\nNenhuma trotinete livre perto da posição " + p.toString());
+            System.out.println("Nenhuma trotinete livre perto da posição " + p.toString());
         }
         for(Position pos: availScooters){
-            System.out.println("\nTrotinete livre na posição " + pos.toString());
+            System.out.println("Trotinete livre na posição " + pos.toString());
         }
     }
 

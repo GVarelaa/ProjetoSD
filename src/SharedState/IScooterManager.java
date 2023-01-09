@@ -1,7 +1,6 @@
 package SharedState;
 
 import Exceptions.*;
-
 import java.util.List;
 
 public interface IScooterManager {

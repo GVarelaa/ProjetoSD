@@ -18,63 +18,91 @@ public class ScooterManagerStub implements ScooterManager{
         Socket socket = new Socket("localhost", 12345);
         TaggedConnection connection = new TaggedConnection(socket);
         this.multiplexer = new Demultiplexer(connection);
-    }
-
-    public void start() throws IOException{
         this.multiplexer.start();
     }
 
+    /**
+     * Closes the connection
+     * @throws IOException
+     */
     public void close() throws IOException {
         this.multiplexer.close();
     }
 
-    public boolean register(String username, String password) throws IOException, InterruptedException {
+    /**
+     * Sends to the multiplexer a register request
+     * Waits for the server response
+     * @param username username
+     * @param password password
+     * @return confirmation
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public boolean register(String username, String password) {
         // send request
-        int size = 4 + username.length() + password.length();
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-        DataOutputStream os = new DataOutputStream(byteArray);
-        os.writeUTF(username);
-        os.writeUTF(password);
+        try{
+            int size = 4 + username.length() + password.length();
+            ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+            DataOutputStream os = new DataOutputStream(byteArray);
+            os.writeUTF(username);
+            os.writeUTF(password);
 
-        this.multiplexer.send(1, byteArray.toByteArray());
+            this.multiplexer.send(1, byteArray.toByteArray());
 
-        // get reply
-        byte[] data = this.multiplexer.receive(1); // bloqueia enquanto nao existirem mensagens / erro
+            // get reply
+            byte[] data = this.multiplexer.receive(1); // bloqueia enquanto nao existirem mensagens / erro
 
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-        boolean flag = is.readBoolean();
+            DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+            boolean flag = is.readBoolean();
 
-        return flag;
+            return flag;
+        }
+        catch (Exception e){
+            return false;
+        }
     }
 
-    public boolean login(String username, String password) throws IOException, InterruptedException {
-        int size = 4 + username.length() + password.length();
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
-        DataOutputStream os = new DataOutputStream(byteArray);
-        os.writeUTF(username);
-        os.writeUTF(password);
+    /**
+     * Sends to the multiplexer a login request
+     * Waits for the server response
+     * @param username username
+     * @param password password
+     * @return confirmation
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public boolean login(String username, String password) {
+        try{
+            int size = 4 + username.length() + password.length();
+            ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
+            DataOutputStream os = new DataOutputStream(byteArray);
+            os.writeUTF(username);
+            os.writeUTF(password);
 
-        this.multiplexer.send(2, byteArray.toByteArray());
+            this.multiplexer.send(2, byteArray.toByteArray());
 
-        // get reply
-        byte[] data = this.multiplexer.receive(2); // bloqueia enquanto nao existirem mensagens / erro
+            // get reply
+            byte[] data = this.multiplexer.receive(2); // bloqueia enquanto nao existirem mensagens / erro
 
-        DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-        boolean flag = is.readBoolean();
+            DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+            boolean flag = is.readBoolean();
 
-        return flag;
+            return flag;
+        }
+        catch (Exception e){
+            return false;
+        }
     }
 
     /**
      * Sends to the multiplexer a request for free scooters near p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @return a list of nearby scooter positions
      * @throws IOException
      * @throws InterruptedException
      */
-    public List<Position> listFreeScooters(Position p) throws IOException, InterruptedException {
+    public List<Position> listFreeScooters(Position p) {
         try{
             int size = 8; // (x)4 + (y)4 bytes
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -106,13 +134,12 @@ public class ScooterManagerStub implements ScooterManager{
     /**
      * Sends to the multiplexer a request for listing rewards near p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @return a list of pairs (origin - destination)
      * @throws IOException
      * @throws InterruptedException
      */
-    public List<List<Position>> listRewards(Position p) throws IOException, InterruptedException {
+    public List<List<Position>> listRewards(Position p) {
         try{
             int size = 8; // (x)4 + (y)4 bytes
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -144,20 +171,20 @@ public class ScooterManagerStub implements ScooterManager{
 
             return rewards;
         }
-        catch(IOException ignored){}
-        return null;
+        catch(Exception e){
+            return null;
+        }
     }
 
     /**
      * Sends to the multiplexer a request for activating a scooter the closest to p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @return a reservation (id and initial position)
      * @throws IOException
      * @throws InterruptedException
      */
-    public Reservation activateScooter(Position p) throws IOException, InterruptedException {
+    public Reservation activateScooter(Position p) {
         try{
             int size = 8;;// + username.length(); // (x)4 + (y)4 bytes
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream(size);
@@ -187,21 +214,21 @@ public class ScooterManagerStub implements ScooterManager{
 
             return reservation;
         }
-        catch (Exception ignored){}
-        return null;
+        catch (Exception ignored){
+            return null;
+        }
     }
 
     /**
      * Sends to the multiplexer a request for parking a scooter at p
      * Waits for the response of the server
-     * TODO test it!
      * @param p the position sent
      * @param codReservation the code of the reservation
      * @return an int (if > 0, the reward, if < 0, the cost)
      * @throws IOException
      * @throws InterruptedException
      */
-    public double parkScooter(Position p, int codReservation) throws IOException, InterruptedException {
+    public double parkScooter(Position p, int codReservation) {
         try{
             int size = 12; // (x)4 + (y)4 bytes + (code)4 bytes
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);
@@ -220,10 +247,9 @@ public class ScooterManagerStub implements ScooterManager{
 
             return cost;
         }
-        catch (Exception ignored){
-
+        catch (Exception e){
+            return 0;
         }
-        return 0;
     }
 
     /**
@@ -233,7 +259,7 @@ public class ScooterManagerStub implements ScooterManager{
      */
     public void turnOnOffNotifications(boolean onOff, Position p){
         try{
-            int size = 1 + (p != null ? 4 : 0); // (onOff)1 + (p)4 bytes
+            int size = 1 + (p != null ? 8 : 0); // (onOff)1 + (p)8 bytes
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(size);
             DataOutputStream os = new DataOutputStream(byteStream);
             os.writeBoolean(onOff);
@@ -244,12 +270,10 @@ public class ScooterManagerStub implements ScooterManager{
 
             this.multiplexer.send(7, byteStream.toByteArray());
         }
-        catch (Exception ignored){
-
+        catch (Exception e){
+            return;
         }
-
     }
-
 
     /**
      * Method that waits for notifications from the server regarding rewards near a position specified before
@@ -275,13 +299,16 @@ public class ScooterManagerStub implements ScooterManager{
 
                 notificationsOn = is.readBoolean();
 
-                System.out.println("Novas notificações recebidas ....");
+                System.out.println("\nNovas notificações recebidas ....");
+                System.out.println("---------------------------------");
+
                 for(int i=0; i<length; i++){
                     System.out.println(rewards.get(i).toString());
                 }
+                System.out.println("---------------------------------\n");
             }
         } catch (Exception e){
-
+            return;
         }
     }
 

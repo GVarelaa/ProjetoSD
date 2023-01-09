@@ -96,7 +96,7 @@ public class Reward {
     /**
      * Deserialization of a reward
      * @param is input stream
-     * @return returns a  reward
+     * @return returns a reward
      * @throws IOException Exception
      */
     public static Reward deserialize(DataInputStream is) throws IOException {
@@ -107,18 +107,24 @@ public class Reward {
     }
 
     /**
-     *  Get the string representation of a reward
+     *  Gets the string representation of a reward
      * @return a reward in the form of a string
      */
     public String toString(){
         return initialPosition.toString() + " -> " + finalPosition.toString();
     }
 
+
+    /**
+     * Checks if two rewards are equal
+     * @param o Object being compared
+     * @return true if they are equal, false otherwise
+     */
     public boolean equals(Object o){
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reward that = (Reward) o;
-        return this.initialPosition.equals(that.initialPosition) && this.finalPosition.equals(that.finalPosition)
-                && this.value == that.value;
+
+        return this.initialPosition.equals(that.initialPosition) && this.finalPosition.equals(that.finalPosition) && this.value == that.value;
     }
 }
