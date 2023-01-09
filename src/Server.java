@@ -155,7 +155,14 @@ class ServerWorker implements Runnable{
                     boolean notificationsOn = is.readBoolean();
                     this.scooterManager.changeNotificationsState(this.clientUsername, notificationsOn);
 
-                    if (notificationsOn){ // Ler a posição
+                    if (!notificationsOn){
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1);  // 1 - boolean
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeBoolean(notificationsOn);
+
+                        this.connection.send(7, byteStream.toByteArray());
+                    }
+                    else if (notificationsOn){ // Ler a posição
                         int x = is.readInt();
                         int y = is.readInt();
                         Position p = new Position(x, y);
@@ -176,7 +183,7 @@ class ServerWorker implements Runnable{
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);
                             int numRewards = newRewards.size();
-
+                            os.writeBoolean(true);
                             if (numRewards > 0) {
                                 os.writeInt(numRewards);
 
@@ -202,7 +209,7 @@ public class Server {
     final static int WORKERS_PER_CONNECTION = 3;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        IScooterManager scooterManager = new ScooterManagerImpl(2, 10, 15);
+        IScooterManager scooterManager = new ScooterManagerImpl(2, 10, 5);
 
         while(true){
             Socket socket = serverSocket.accept();

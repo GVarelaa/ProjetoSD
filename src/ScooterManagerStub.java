@@ -255,17 +255,25 @@ public class ScooterManagerStub implements ScooterManager{
      * Method that waits for notifications from the server regarding rewards near a position specified before
      */
     public void waitForNotifications(){
+        boolean notificationsOn = true;
         try {
             while (true) {
                 byte[] data = this.multiplexer.receive(7);
                 DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
                 List<Reward> rewards = new ArrayList<>();
 
+                notificationsOn = is.readBoolean();
+                if (notificationsOn == false){
+                    break;
+                }
+
                 int length = is.readInt();
                 for(int i=0; i<length; i++){
                     Reward r = Reward.deserialize(is);
                     rewards.add(r);
                 }
+
+                notificationsOn = is.readBoolean();
 
                 System.out.println("Novas notificações recebidas ....");
                 for(int i=0; i<length; i++){
