@@ -1,5 +1,6 @@
 import SharedState.Position;
 import SharedState.Reservation;
+import SharedState.Reward;
 
 import java.io.IOException;
 import java.util.List;
@@ -210,7 +211,20 @@ public class Client {
 
         c.turnOnOffNotifications(true, new Position(x, y));
         Thread t = new Thread(() -> {
-            c.waitForNotifications();
+            while(true){
+                List<Reward> rewards = c.waitForNotifications();
+
+                if (rewards == null)
+                    break;
+
+                System.out.println("\nNovas notificações recebidas ....");
+                System.out.println("---------------------------------");
+
+                for(int i=0; i<rewards.size(); i++){
+                    System.out.println(rewards.get(i).toString());
+                }
+                System.out.println("---------------------------------\n");
+            }
         });
         t.start();
     }

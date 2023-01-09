@@ -182,8 +182,10 @@ class ServerWorker implements Runnable{
 
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(4);  // 4 - int
                             DataOutputStream os = new DataOutputStream(byteStream);
-                            int numRewards = newRewards.size();
+
                             os.writeBoolean(true);
+
+                            int numRewards = newRewards.size();
                             if (numRewards > 0) {
                                 os.writeInt(numRewards);
 
@@ -206,7 +208,7 @@ public class Server {
     final static int WORKERS_PER_CONNECTION = 3;
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(12345);
-        IScooterManager scooterManager = new ScooterManagerImpl(2, 10, 5);
+        IScooterManager scooterManager = new ScooterManagerImpl(2, 10, 15);
 
         while(true){
             Socket socket = serverSocket.accept();

@@ -60,12 +60,6 @@ public class ScooterManagerImpl implements IScooterManager{
         this.randomizeScooterPositions();
 
         new Thread(() -> this.generateRewards()).start();
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -391,6 +385,8 @@ public class ScooterManagerImpl implements IScooterManager{
         while(true){ // Quando for estacionada
             try{
                 this.rewardsLock.lock();
+
+                for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
 
                 while(this.lastActivate == lastActivate && this.lastPark == lastPark){
                     try{

@@ -25,8 +25,13 @@ public class ScooterManagerStub implements ScooterManager{
      * Closes the connection
      * @throws IOException
      */
-    public void close() throws IOException {
-        this.multiplexer.close();
+    public void close() {
+        try{
+            this.multiplexer.close();
+        }
+        catch (Exception e){
+            return;
+        }
     }
 
     /**
@@ -191,7 +196,6 @@ public class ScooterManagerStub implements ScooterManager{
             DataOutputStream os = new DataOutputStream(byteArray);
             os.writeInt(p.getX());
             os.writeInt(p.getY());
-            //os.writeUTF(username);
 
             this.multiplexer.send(5, byteArray.toByteArray());
 
@@ -278,37 +282,29 @@ public class ScooterManagerStub implements ScooterManager{
     /**
      * Method that waits for notifications from the server regarding rewards near a position specified before
      */
-    public void waitForNotifications(){
-        boolean notificationsOn = true;
+    public List<Reward> waitForNotifications(){
+        boolean notificationsOn;
         try {
-            while (true) {
-                byte[] data = this.multiplexer.receive(7);
-                DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
-                List<Reward> rewards = new ArrayList<>();
+            byte[] data = this.multiplexer.receive(7);
+            DataInputStream is = new DataInputStream(new ByteArrayInputStream(data));
+            List<Reward> rewards = new ArrayList<>();
 
-                notificationsOn = is.readBoolean();
-                if (notificationsOn == false){
-                    break;
-                }
-
+            notificationsOn = is.readBoolean();
+            if (!notificationsOn){
+                return null;
+            }
+            else{
                 int length = is.readInt();
                 for(int i=0; i<length; i++){
                     Reward r = Reward.deserialize(is);
                     rewards.add(r);
                 }
 
-                notificationsOn = is.readBoolean();
-
-                System.out.println("\nNovas notificações recebidas ....");
-                System.out.println("---------------------------------");
-
-                for(int i=0; i<length; i++){
-                    System.out.println(rewards.get(i).toString());
-                }
-                System.out.println("---------------------------------\n");
+                return rewards;
             }
-        } catch (Exception e){
-            return;
+        }
+        catch (Exception e){
+            return null;
         }
     }
 

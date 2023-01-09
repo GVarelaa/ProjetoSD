@@ -1,5 +1,6 @@
 import SharedState.Position;
 import SharedState.Reservation;
+import SharedState.Reward;
 
 import java.io.IOException;
 import java.util.List;
@@ -85,5 +86,5 @@ public interface ScooterManager {
     /**
      * Method that waits for notifications from the server regarding rewards near a position specified before
      */
-    public void waitForNotifications();
+    public List<Reward> waitForNotifications();
 }
