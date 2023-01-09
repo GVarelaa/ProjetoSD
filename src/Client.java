@@ -51,7 +51,7 @@ public class Client {
 
                 case 5:
                     turnOnNotificationsMenu(sc, c);
-                    System.out.println("\nNotificações ativivadas com sucesso!");
+                    System.out.println("\nNotificações ativadas com sucesso!");
                     break;
 
                 case 6:
