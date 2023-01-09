@@ -217,13 +217,16 @@ public class Client {
                 if (rewards == null)
                     break;
 
-                System.out.println("\nNovas notificações recebidas ....");
-                System.out.println("---------------------------------");
+                System.out.println("\n----------------------------------");
+                System.out.println("   Novas notificações recebidas");
+                System.out.println("----------------------------------");
 
                 for(int i=0; i<rewards.size(); i++){
-                    System.out.println(rewards.get(i).toString());
+                    String initPos = rewards.get(i).getInitialPosition().toString();
+                    String finalPos = rewards.get(i).getFinalPosition().toString();
+                    System.out.println("Recompensa disponível de " + initPos + " para " + finalPos);
                 }
-                System.out.println("---------------------------------\n");
+                System.out.println("----------------------------------\n");
             }
         });
         t.start();
