@@ -141,13 +141,18 @@ class ServerWorker implements Runnable{
 
                     int reservationID = is.readInt();
 
-                    double cost = this.scooterManager.parkScooter(reservationID, p);
+                    try{
+                        double cost = this.scooterManager.parkScooter(reservationID, p);
 
-                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 8 - double
-                    DataOutputStream os = new DataOutputStream(byteStream);
-                    os.writeDouble(cost);
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8);  // 8 - double
+                        DataOutputStream os = new DataOutputStream(byteStream);
+                        os.writeDouble(cost);
 
-                    this.connection.send(6, byteStream.toByteArray());
+                        this.connection.send(6, byteStream.toByteArray());
+                    }
+                    catch (InvalidReservationIDException e){
+
+                    }
                 }
                 else if (frame.tag == 7){
                     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(frame.data);

@@ -56,7 +56,7 @@ public interface IScooterManager {
      * @param parkingPosition final position of the scooter
      * @return the cost of the ride or the reward (if applicable)
      */
-    double parkScooter(int reservationId, Position parkingPosition);
+    double parkScooter(int reservationId, Position parkingPosition) throws InvalidReservationIDException;
 
     /**
      * Check if there are new rewards on the radius of a given position and waits for that otherwise

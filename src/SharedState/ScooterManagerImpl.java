@@ -323,7 +323,7 @@ public class ScooterManagerImpl implements IScooterManager{
      * @param parkingPosition final position of the scooter
      * @return the cost of the ride or the reward (if applicable)
      */
-    public double parkScooter(int reservationID, Position parkingPosition){
+    public double parkScooter(int reservationID, Position parkingPosition) throws InvalidReservationIDException{
         Scooter scooter = null;
         Reservation reservation = null;
         LocalDateTime parkTimestamp = LocalDateTime.now();
@@ -331,7 +331,13 @@ public class ScooterManagerImpl implements IScooterManager{
         try {
             this.reservationsLock.lock();
 
-            reservation = this.reservations.get(reservationID); // lançar exceção se for null
+            if (this.reservations.containsKey(reservationID)){
+                reservation = this.reservations.get(reservationID); // lançar exceção se for null
+            }
+            else{
+                throw new InvalidReservationIDException("Invalid reservation id!");
+            }
+
             this.reservations.remove(reservationID); // removemos do mapa?
 
             this.rewardsLock.lock();
