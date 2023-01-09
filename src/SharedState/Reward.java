@@ -113,4 +113,12 @@ public class Reward {
     public String toString(){
         return initialPosition.toString() + " -> " + finalPosition.toString();
     }
+
+    public boolean equals(Object o){
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Reward that = (Reward) o;
+        return this.initialPosition.equals(that.initialPosition) && this.finalPosition.equals(that.finalPosition)
+                && this.value == that.value;
+    }
 }

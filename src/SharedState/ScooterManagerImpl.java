@@ -26,7 +26,7 @@ public class ScooterManagerImpl implements IScooterManager{
     private List<Reward> rewards;
     public ReentrantLock rewardsLock;
     private Condition rewardsCond;
-    public Condition notificationsCond;
+    private Condition notificationsCond;
     private int lastActivate; // Para a condição da variável de condição
     private int lastPark;
 
@@ -87,7 +87,6 @@ public class ScooterManagerImpl implements IScooterManager{
 
             User newUser = new User(username, password);
             this.users.put(username, newUser);
-            System.out.println(this.users.size());
         }
         finally {
             this.usersWriteLock.unlock();
@@ -139,7 +138,6 @@ public class ScooterManagerImpl implements IScooterManager{
 
         try {
             user.setNotificationsState(notificationsState);
-            System.out.println(user.getNotificationsState());
         }
         finally {
             user.lock.unlock();
@@ -225,7 +223,6 @@ public class ScooterManagerImpl implements IScooterManager{
      */
     public Reservation activateScooter(Position p, String username) throws NoScootersAvailableException {
         Scooter nearScooter = null;
-        System.out.println("Thread " + Thread.currentThread().getName() + " started activating scooter at position " + p.toString());
 
         for (Scooter scooter: this.scooters) { // Iterate over scooters set
             scooter.lockScooter.lock();
@@ -263,7 +260,6 @@ public class ScooterManagerImpl implements IScooterManager{
             this.rewardsLock.unlock();
 
             this.reservations.put(r.getReservationID(), r);
-            System.out.println(this.reservations.size());
 
             return r; 
         } finally {
@@ -320,7 +316,6 @@ public class ScooterManagerImpl implements IScooterManager{
                 scooter.lockScooter.lock();
                 scooter.setPosition(parkingPosition);
                 scooter.setIsFree(true);
-                System.out.println(scooter.getPosition());
             }
             finally {
                 scooter.lockScooter.unlock();
@@ -359,9 +354,6 @@ public class ScooterManagerImpl implements IScooterManager{
             try{
                 this.rewardsLock.lock();
 
-                for(int i = 0; i < this.rewards.size(); i++) System.out.println(this.rewards.get(i));
-                System.out.println("aqui");
-
                 while(this.lastActivate == lastActivate && this.lastPark == lastPark){
                     try{
                         this.rewardsCond.await();
@@ -369,7 +361,6 @@ public class ScooterManagerImpl implements IScooterManager{
                     catch (Exception ignored){ // mudar
 
                     }
-                    System.out.println("acordei");
                 }
 
                 List<Position> positions = new ArrayList<>();
@@ -387,7 +378,6 @@ public class ScooterManagerImpl implements IScooterManager{
 
                 List<Position> samePositions = this.scootersInSamePositions(positions);
                 for(Position p1 : samePositions){
-                    System.out.println(p1);
                     for (int i = 0; i < N; i++){
                         for (int j = 0; j < N; j++){
                             boolean bool = true;
@@ -415,11 +405,24 @@ public class ScooterManagerImpl implements IScooterManager{
 
                 lastPark = this.lastPark;
                 lastActivate = this.lastActivate;
+
+                this.notificationsCond.signalAll();
             }
             finally {
                 this.rewardsLock.unlock();
             }
         }
+    }
+
+    public List<Position> scootersInSamePositions(List<Position> positions){
+        List<Position> samePositions = new ArrayList<>();
+
+        for(Position p : positions){
+            if(Collections.frequency(positions, p) > 1 && !samePositions.contains(p))
+                samePositions.add(p);
+        }
+
+        return samePositions;
     }
 
     /**
@@ -439,17 +442,6 @@ public class ScooterManagerImpl implements IScooterManager{
         }
 
         return rewards;
-    }
-
-    public List<Position> scootersInSamePositions(List<Position> positions){
-        List<Position> samePositions = new ArrayList<>();
-
-        for(Position p : positions){
-            if(Collections.frequency(positions, p) > 1 && !samePositions.contains(p))
-                samePositions.add(p);
-        }
-
-        return samePositions;
     }
 
 
@@ -475,14 +467,12 @@ public class ScooterManagerImpl implements IScooterManager{
      * @return List of new rewards on the radius of a given position
      */
     public List<Reward> userNotifications(String username, Position p, List<Reward> oldRewards) throws NotificationsDisabledException{
-        System.out.println(username);
         List<Reward> diff;
         try{
             this.rewardsLock.lock();
 
             while((diff = this.getDiff(this.getRewardsFromPosition(p), oldRewards)).size() == 0){ // Condição : enquanto não houver recompensas no seu raio, adormece
-                User u = null;
-
+                User u;
                 try{
                     this.notificationsCond.await();
 
@@ -511,6 +501,7 @@ public class ScooterManagerImpl implements IScooterManager{
 
                 }
             }
+
             for(Reward r: diff){
                 oldRewards.add(r);
             }
