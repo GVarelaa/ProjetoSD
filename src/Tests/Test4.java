@@ -1,0 +1,71 @@
+package Tests;
+
+import SharedState.Position;
+import SharedState.Reservation;
+import SharedState.Reward;
+import SharedState.ScooterManagerImpl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Test4 {
+    public static void main(String[] args) throws InterruptedException {
+        ScooterManagerImpl sm = new ScooterManagerImpl(20, 20, 11);
+
+        int threadNum = 10;
+        Thread t[] = new Thread[threadNum*2];
+        int i=0;
+        for (; i<threadNum; i++){
+            int finalI = i;
+            t[i] = new Thread(() -> {
+                try{
+                    sm.register(Integer.toString(finalI), "pass");
+                    boolean validLogin = sm.login(Integer.toString(finalI), "pass");
+                    if (validLogin == true){
+                        List<Reward> rewards = sm.userNotifications(Integer.toString(finalI), new Position(1,2), new ArrayList<>());
+                        if (rewards != null){
+                            for(Reward r: rewards){
+                                System.out.println(r.toString());
+                            }
+                        }
+                        System.out.println(Thread.currentThread().getName() + " finnished!");
+                    }
+                    else {
+                        System.out.println("Fail in thread " + Thread.currentThread().getName());
+                    }
+                } catch(Exception e){
+                    System.out.println(e.getMessage());
+                }
+            });
+            t[i].start();
+            //Thread.sleep(10);
+        }
+
+        for (; i<threadNum*2; i++){
+            int finalI = i;
+            t[i] = new Thread(() -> {
+                try{
+                    sm.register(Integer.toString(finalI), "pass");
+                    boolean validLogin = sm.login(Integer.toString(finalI), "pass");
+                    if (validLogin == true){
+                        System.out.println(Thread.currentThread().getName() + " finnished!");
+                        sm.activateScooter(new Position(1,1), Integer.toString(finalI));
+                    }
+                    else {
+                        System.out.println("Fail in thread " + Thread.currentThread().getName());
+                    }
+                } catch(Exception e){
+                    System.out.println(e.getMessage());
+                }
+            });
+            t[i].start();
+            Thread.sleep(1000);
+        }
+
+        for(int j=0; j<threadNum*2; j++){
+            t[j].join();
+        }
+
+        System.out.println("Terminei");
+    }
+}

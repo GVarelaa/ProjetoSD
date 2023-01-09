@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ScooterManagerImpl implements IScooterManager{
+    private int R = 2;
     private int D = 5;
     private int N = 10; // dimensão do mapa
     private int S = 15; // número de scooters fixo,
@@ -118,7 +119,7 @@ public class ScooterManagerImpl implements IScooterManager{
     }
 
     /**
-     * Changes the notifications state of an user
+     * Changes the notifications state of a user
      * @param username user's name
      * @param notificationsState state
      */
@@ -383,7 +384,7 @@ public class ScooterManagerImpl implements IScooterManager{
                             boolean bool = true;
 
                             for (Position p2 : positions){
-                                if(p2.inRadius(i, j, D)){
+                                if(p2.inRadius(i, j, R)){
                                     bool = false;
                                     break;
                                 }
