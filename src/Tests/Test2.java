@@ -1,5 +1,6 @@
 package Tests;
 
+import Exceptions.InvalidReservationIDException;
 import Exceptions.NonExistentUsernameException;
 import Exceptions.UsernameAlreadyExistsException;
 import Exceptions.WrongPasswordException;
@@ -26,7 +27,11 @@ public class Test2 {
                 }
                 if (r != null) System.out.println(r.toString());
 
-                System.out.println(sm.parkScooter(r.getReservationID(), new Position(1,1)) + " €");
+                try {
+                    System.out.println(sm.parkScooter(r.getReservationID(), new Position(1,1)) + " €");
+                } catch (InvalidReservationIDException e) {
+                    throw new RuntimeException(e);
+                }
             });
             t[i].start();
             Thread.sleep(10);
