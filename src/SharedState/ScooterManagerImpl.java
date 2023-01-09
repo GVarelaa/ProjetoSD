@@ -144,7 +144,7 @@ public class ScooterManagerImpl implements IScooterManager{
 
             User user = this.users.get(username);
 
-            if (!user.getUsername().equals(username) && user.getPassword().equals(password)) {
+            if (!(user.getUsername().equals(username) && user.getPassword().equals(password))) {
                 throw new WrongPasswordException("A password não coincide!");
             }
         }
